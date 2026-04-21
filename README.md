@@ -55,3 +55,33 @@ crf-edge-pipeline/
 - The real AI engine (TensorRT models, encrypted binaries, BC/DSpec libraries) is not in the repo.
 - It is deployed only on your device image (e.g., Jetson SD card / Docker image).
   
+## Using an Edge Device Architecture :
+``` Code
+crf-edge/
+├─ README.md
+├─ pyproject.toml
+├─ crf_edge/
+│  ├─ cli.py
+│  ├─ hardware/
+│  │  ├─ lock.py
+│  ├─ models/
+│  │  ├─ detectron.engine      # TensorRT (NOT in GitHub)
+│  │  ├─ layoutlm.onnx         # ONNX (NOT in GitHub)
+│  │  ├─ donut.onnx            # ONNX (NOT in GitHub)
+│  ├─ extract/
+│  │  ├─ layout_detector.py
+│  │  ├─ semantic_extractor.py
+│  │  ├─ donut_parser.py
+│  ├─ metadata/
+│  │  ├─ builder.py
+│  │  ├─ schema.json
+│  ├─ engine/
+│  │  ├─ bc_mapper.bin         # encrypted
+│  │  ├─ dspec_mapper.bin      # encrypted
+│  │  ├─ sdtm_engine.bin       # encrypted
+│  └─ utils/
+│     ├─ logger.py
+└─ examples/
+   ├─ sample_crf.pdf
+   └─ sample_output.json
+`````

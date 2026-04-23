@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CRFMetadata",
+  "type": "object",
+  "properties": {
+    "form_name": { "type": "string" },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "section_name": { "type": "string" },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field_name": { "type": "string" },
+                "label": { "type": "string" },
+                "type": { "type": "string" },
+                "annotation": { "type": "string" },
+                "source_id": { "type": "string" }
+              },
+              "required": ["field_name", "label"]
+            }
+          }
+        },
+        "required": ["section_name", "fields"]
+      }
+    }
+  },
+  "required": ["form_name", "sections"]
+}

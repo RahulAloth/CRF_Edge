@@ -547,3 +547,136 @@ CRF_PARAMS_CARDIOVASCULAR = {
     "signature_date": "15‑APR‑2026",
 }
 
+CRF_PARAMS_RHEUMATOLOGY = {
+    "crf_name": "crf_rheumatology",
+    "study_id": "RHEUM-2026-204",
+    "site_number": "014",
+    "subject_id": "RHEUM-014-3321",
+    "screening_number": "SCR-2026-119",
+    "dob": "22-MAR-1972",
+    "sex": "Female",
+    "ethnicity": "Not Hispanic or Latino",
+    "race": "Asian",
+    "height": "162",
+    "weight": "68.4",
+    "bmi": "26.1",
+    "consent_date": "12-JAN-2026",
+
+    # Diagnosis
+    "primary_site": "Rheumatology — Rheumatoid Arthritis (Seropositive)",
+    "histology": "Not applicable",
+    "diagnosis_date": "15-DEC-2025",
+    "tnm": "Not applicable",
+    "stage": "Moderate-to-Severe Disease Activity",
+    "metastatic": "NO",
+    "biomarkers": "RF: 120 IU/mL (high), Anti-CCP: 240 U/mL (high), ESR: 48 mm/hr",
+    "ki67": "Not applicable",
+    "brca": "Not applicable",
+
+    # Target lesions (repurposed for joint involvement)
+    "tl1_loc": "Right wrist — synovitis + erosions",
+    "tl1_diam": "Grade 3 inflammation",
+    "tl2_loc": "Left MCP joints (2–3) — swelling + tenderness",
+    "tl2_diam": "Grade 2 inflammation",
+    "tl3_loc": "Right knee — effusion",
+    "tl3_diam": "Moderate effusion",
+    "baseline_imaging": "MRI Wrist + Ultrasound of MCP joints",
+
+    # Non-target lesions
+    "ntl1": "Morning stiffness > 60 minutes",
+    "ntl2": "Mild anemia of chronic disease",
+    "ntl3": "Fatigue (RA-related)",
+    "other_findings": "DAS28 score: 5.6 (high disease activity)",
+
+    # Functional status (ECOG repurposed)
+    "ecog": ["1", "1", "2", "2", "1"],
+
+    # Vitals
+    "vital_date": "15-DEC-2025",
+    "sbp": "138",
+    "dbp": "86",
+    "hr": "88",
+    "rr": "18",
+    "temp": "36.7",
+
+    # Concomitant medications
+    "conmeds": [
+        ("Methotrexate 15 mg weekly", "DMARD therapy", "20-DEC-2025", "Ongoing"),
+        ("Folic Acid", "Supplement with MTX", "20-DEC-2025", "Ongoing"),
+        ("Prednisone 5 mg", "RA flare control", "05-JAN-2026", "Ongoing"),
+        ("Ibuprofen", "Pain management", "15-DEC-2025", "As needed"),
+        ("Omeprazole", "Gastroprotection", "20-DEC-2025", "Ongoing"),
+    ],
+
+    # Medical history
+    "medical_history": [
+        ("Hypothyroidism", "01-JAN-2018", True, "On levothyroxine"),
+        ("Iron-deficiency anemia", "10-JUL-2020", True, "Intermittent"),
+        ("Gestational diabetes", "2010", False, "Resolved"),
+        ("Family history of autoimmune disease", "—", False, "Mother: RA"),
+    ],
+
+    # Treatment regimen (Biologic + DMARD)
+    "arm": "Arm B — TNF Inhibitor + Methotrexate",
+    "regimen": "Adalimumab 40 mg Q2W + Methotrexate",
+    "cycle_length": "28",
+    "planned_cycles": "12-month treatment",
+    "treatment_start": "20-JAN-2026",
+    "treatment_end": "JAN-2027",
+
+    # Cycle visits
+    "cycle1_date": "20-JAN-2026",
+    "cycle2_date": "17-FEB-2026",
+    "cycle3_date": "17-MAR-2026",
+
+    # Adverse Events
+    "aes_page1": [
+        ("Injection site reaction", "20-JAN-2026", "21-JAN-2026", "Mild", "Related", "Recovered"),
+        ("Headache", "22-JAN-2026", "23-JAN-2026", "Mild", "Unrelated", "Recovered"),
+    ],
+    "aes_page2": [
+        ("Upper respiratory infection", "10-FEB-2026", "15-FEB-2026", "Moderate", "Possibly related", "Recovered"),
+        ("Fatigue", "01-FEB-2026", "Ongoing", "Mild", "Related", "Ongoing"),
+    ],
+
+    # Labs
+    "hematology": [
+        ("Hemoglobin", "11.2", "g/dL", "Low"),
+        ("WBC", "6.8", "x10⁹/L", "Normal"),
+        ("Platelets", "310", "x10⁹/L", "Normal"),
+        ("Neutrophils", "4.1", "x10⁹/L", "Normal"),
+        ("Lymphocytes", "1.6", "x10⁹/L", "Normal"),
+    ],
+    "chemistry": [
+        ("ALT", "22", "U/L", "Normal"),
+        ("AST", "26", "U/L", "Normal"),
+        ("Creatinine", "0.8", "mg/dL", "Normal"),
+        ("BUN", "14", "mg/dL", "Normal"),
+        ("CRP", "18", "mg/L", "High"),
+        ("Sodium", "139", "mmol/L", "Normal"),
+        ("Potassium", "4.2", "mmol/L", "Normal"),
+    ],
+
+    # Imaging
+    "imaging": [
+        ("MRI Wrist", "15-DEC-2025", "Synovitis + erosions"),
+        ("Ultrasound MCP joints", "15-DEC-2025", "Power Doppler grade 2 inflammation"),
+        ("X-ray Hands", "10-JAN-2026", "Early erosive changes"),
+    ],
+
+    # Clinical response (repurposed RECIST)
+    "recist": [
+        ("Baseline", "High disease activity (DAS28 5.6)"),
+        ("Cycle 2 Day 1", "Moderate improvement (DAS28 4.2)"),
+        ("Cycle 3 Day 1", "Further improvement (DAS28 3.8)"),
+        ("Cycle 4 Day 1", "Low disease activity (DAS28 3.2)"),
+    ],
+    "best_response": "Low Disease Activity",
+
+    # Survival / Follow-up
+    "last_alive": "15-APR-2026",
+    "progression": "NO",
+    "survival_status": "Alive",
+    "investigator": "Dr. Hannah Müller",
+    "signature_date": "15-APR-2026",
+}

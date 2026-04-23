@@ -53,7 +53,9 @@ def header(c, title, page_no, total_pages):
     c.setFont("Helvetica-Bold", 12)
     c.drawString(MARGIN_L, PAGE_H - 10*mm, title)
     c.setFont("Helvetica", 8)
-    c.drawString(MARGIN_L, PAGE_H - 15*mm, "Protocol: ONC‑2026‑001  |  Dummy Oncology CRF (Rich)")
+    # c.drawString(MARGIN_L, PAGE_H - 15*mm, "Protocol: ONC‑2026‑001  |  Dummy Oncology CRF (Rich)")
+    c.drawString(MARGIN_L, PAGE_H - 15 * mm, f"Protocol: {CRF_PARAMS["crf_name"]}  | {CRF_PARAMS["study_id"]}|  "
+                                             f"Dummy {CRF_PARAMS["crf_name"]} CRF (Rich)")
     c.drawRightString(MARGIN_R, PAGE_H - 15*mm, f"Page {page_no} of {total_pages}")
 
 def frame(c):

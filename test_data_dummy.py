@@ -141,7 +141,7 @@ CRF_PARAMS_LUNG_CANCER = {
     "signature_date": "10‑APR‑2026",
 }
 
-CRF_PARAMS_COLATORAL_CANCER = {
+CRF_PARAMS_COLON_CANCER = {
     "crf_name": "crf_colatoral_cancer",
     "study_id": "CRC‑2026‑113",
     "site_number": "027",
@@ -547,136 +547,136 @@ CRF_PARAMS_CARDIOVASCULAR = {
     "signature_date": "15‑APR‑2026",
 }
 
-CRF_PARAMS_RHEUMATOLOGY = {
-    "crf_name": "crf_rheumatology",
-    "study_id": "RHEUM-2026-204",
-    "site_number": "014",
-    "subject_id": "RHEUM-014-3321",
-    "screening_number": "SCR-2026-119",
-    "dob": "22-MAR-1972",
+CRF_PARAMS_GLAUCOMA = {
+    "crf_name": "crf_glaucoma",
+    "study_id": "GLA-2026-014",
+    "site_number": "112",
+    "subject_id": "GLA-112-0874",
+    "screening_number": "SCR-2026-311",
+    "dob": "14-MAY-1965",
     "sex": "Female",
-    "ethnicity": "Not Hispanic or Latino",
-    "race": "Asian",
-    "height": "162",
-    "weight": "68.4",
-    "bmi": "26.1",
-    "consent_date": "12-JAN-2026",
+    "ethnicity": "Hispanic or Latino",
+    "race": "White",
+    "height": "165",
+    "weight": "68.2",
+    "bmi": "25.1",
+    "consent_date": "05-JAN-2026",
 
     # Diagnosis
-    "primary_site": "Rheumatology — Rheumatoid Arthritis (Seropositive)",
-    "histology": "Not applicable",
-    "diagnosis_date": "15-DEC-2025",
+    "primary_site": "Bilateral Primary Open-Angle Glaucoma",
+    "histology": "Not applicable (ophthalmic disease)",
+    "diagnosis_date": "18-NOV-2025",
     "tnm": "Not applicable",
-    "stage": "Moderate-to-Severe Disease Activity",
+    "stage": "Moderate Stage (Hodapp–Parrish–Anderson)",
     "metastatic": "NO",
-    "biomarkers": "RF: 120 IU/mL (high), Anti-CCP: 240 U/mL (high), ESR: 48 mm/hr",
+    "biomarkers": "Optic nerve cupping; RNFL thinning on OCT",
     "ki67": "Not applicable",
     "brca": "Not applicable",
 
-    # Target lesions (repurposed for joint involvement)
-    "tl1_loc": "Right wrist — synovitis + erosions",
-    "tl1_diam": "Grade 3 inflammation",
-    "tl2_loc": "Left MCP joints (2–3) — swelling + tenderness",
-    "tl2_diam": "Grade 2 inflammation",
-    "tl3_loc": "Right knee — effusion",
-    "tl3_diam": "Moderate effusion",
-    "baseline_imaging": "MRI Wrist + Ultrasound of MCP joints",
+    # Target lesions (analogous → ophthalmology uses structural metrics)
+    "tl1_loc": "Right Eye — Optic Nerve Head",
+    "tl1_diam": "0.78 (cup-to-disc ratio)",
+    "tl2_loc": "Left Eye — Optic Nerve Head",
+    "tl2_diam": "0.74 (cup-to-disc ratio)",
+    "tl3_loc": "Right Eye — RNFL Thickness",
+    "tl3_diam": "62 (µm)",
+    "baseline_imaging": "OCT RNFL + OCT Macula + Visual Field (24-2)",
 
     # Non-target lesions
-    "ntl1": "Morning stiffness > 60 minutes",
-    "ntl2": "Mild anemia of chronic disease",
-    "ntl3": "Fatigue (RA-related)",
-    "other_findings": "DAS28 score: 5.6 (high disease activity)",
+    "ntl1": "Peripheral visual field defects (Right Eye)",
+    "ntl2": "Inferior arcuate scotoma (Left Eye)",
+    "ntl3": "No retinal detachment",
+    "other_findings": "No diabetic retinopathy",
 
-    # Functional status (ECOG repurposed)
-    "ecog": ["1", "1", "2", "2", "1"],
+    # ECOG (not relevant → but keeping structure for schema consistency)
+    "ecog": ["0", "0", "0", "0", "0"],
 
     # Vitals
-    "vital_date": "15-DEC-2025",
-    "sbp": "138",
-    "dbp": "86",
-    "hr": "88",
-    "rr": "18",
+    "vital_date": "18-NOV-2025",
+    "sbp": "132",
+    "dbp": "82",
+    "hr": "78",
+    "rr": "16",
     "temp": "36.7",
 
-    # Concomitant medications
+    # Concomitant meds
     "conmeds": [
-        ("Methotrexate 15 mg weekly", "DMARD therapy", "20-DEC-2025", "Ongoing"),
-        ("Folic Acid", "Supplement with MTX", "20-DEC-2025", "Ongoing"),
-        ("Prednisone 5 mg", "RA flare control", "05-JAN-2026", "Ongoing"),
-        ("Ibuprofen", "Pain management", "15-DEC-2025", "As needed"),
-        ("Omeprazole", "Gastroprotection", "20-DEC-2025", "Ongoing"),
+        ("Latanoprost", "Glaucoma", "18-NOV-2025", "Ongoing"),
+        ("Timolol", "Glaucoma", "18-NOV-2025", "Ongoing"),
+        ("Atorvastatin", "Hyperlipidemia", "01-JAN-2024", "Ongoing"),
+        ("Vitamin D", "Supplement", "01-MAR-2025", "Ongoing"),
     ],
 
     # Medical history
     "medical_history": [
-        ("Hypothyroidism", "01-JAN-2018", True, "On levothyroxine"),
-        ("Iron-deficiency anemia", "10-JUL-2020", True, "Intermittent"),
-        ("Gestational diabetes", "2010", False, "Resolved"),
-        ("Family history of autoimmune disease", "—", False, "Mother: RA"),
+        ("Hypertension", "2018", True, "Controlled on medication"),
+        ("Hyperlipidemia", "2020", True, "On atorvastatin"),
+        ("Myopia", "Childhood", False, "Stable"),
+        ("Family History of Glaucoma", "—", False, "Mother diagnosed at 62"),
+        ("Dry Eye Syndrome", "2023", False, "Mild"),
     ],
 
-    # Treatment regimen (Biologic + DMARD)
-    "arm": "Arm B — TNF Inhibitor + Methotrexate",
-    "regimen": "Adalimumab 40 mg Q2W + Methotrexate",
-    "cycle_length": "28",
-    "planned_cycles": "12-month treatment",
-    "treatment_start": "20-JAN-2026",
+    # Treatment regimen
+    "arm": "Arm B — Dual Therapy (Prostaglandin + Beta-blocker)",
+    "regimen": "Latanoprost + Timolol",
+    "cycle_length": "30",
+    "planned_cycles": "12 months continuous therapy",
+    "treatment_start": "10-JAN-2026",
     "treatment_end": "JAN-2027",
 
     # Cycle visits
-    "cycle1_date": "20-JAN-2026",
-    "cycle2_date": "17-FEB-2026",
-    "cycle3_date": "17-MAR-2026",
+    "cycle1_date": "10-JAN-2026",
+    "cycle2_date": "10-FEB-2026",
+    "cycle3_date": "10-MAR-2026",
 
-    # Adverse Events
+    # AEs
     "aes_page1": [
-        ("Injection site reaction", "20-JAN-2026", "21-JAN-2026", "Mild", "Related", "Recovered"),
-        ("Headache", "22-JAN-2026", "23-JAN-2026", "Mild", "Unrelated", "Recovered"),
+        ("Eye redness", "12-JAN-2026", "Ongoing", "Mild", "Related", "Ongoing"),
+        ("Dryness/irritation", "15-JAN-2026", "Ongoing", "Mild", "Related", "Ongoing"),
     ],
     "aes_page2": [
-        ("Upper respiratory infection", "10-FEB-2026", "15-FEB-2026", "Moderate", "Possibly related", "Recovered"),
-        ("Fatigue", "01-FEB-2026", "Ongoing", "Mild", "Related", "Ongoing"),
+        ("Fatigue (from beta-blocker)", "20-JAN-2026", "05-FEB-2026", "Mild", "Related", "Recovered"),
+        ("Mild bradycardia", "01-FEB-2026", "Ongoing", "Moderate", "Possibly Related", "Ongoing"),
     ],
 
-    # Labs
+    # Labs (ophthalmology rarely uses labs → but keeping schema)
     "hematology": [
-        ("Hemoglobin", "11.2", "g/dL", "Low"),
-        ("WBC", "6.8", "x10⁹/L", "Normal"),
-        ("Platelets", "310", "x10⁹/L", "Normal"),
-        ("Neutrophils", "4.1", "x10⁹/L", "Normal"),
-        ("Lymphocytes", "1.6", "x10⁹/L", "Normal"),
+        ("Hemoglobin", "12.9", "g/dL", "Normal"),
+        ("WBC", "5.8", "x10⁹/L", "Normal"),
+        ("Platelets", "275", "x10⁹/L", "Normal"),
+        ("Neutrophils", "3.2", "x10⁹/L", "Normal"),
+        ("Lymphocytes", "1.4", "x10⁹/L", "Normal"),
     ],
     "chemistry": [
-        ("ALT", "22", "U/L", "Normal"),
-        ("AST", "26", "U/L", "Normal"),
+        ("ALT", "29", "U/L", "Normal"),
+        ("AST", "25", "U/L", "Normal"),
         ("Creatinine", "0.8", "mg/dL", "Normal"),
         ("BUN", "14", "mg/dL", "Normal"),
-        ("CRP", "18", "mg/L", "High"),
-        ("Sodium", "139", "mmol/L", "Normal"),
-        ("Potassium", "4.2", "mmol/L", "Normal"),
+        ("Glucose", "102", "mg/dL", "Normal"),
+        ("Sodium", "140", "mmol/L", "Normal"),
+        ("Potassium", "4.1", "mmol/L", "Normal"),
     ],
 
     # Imaging
     "imaging": [
-        ("MRI Wrist", "15-DEC-2025", "Synovitis + erosions"),
-        ("Ultrasound MCP joints", "15-DEC-2025", "Power Doppler grade 2 inflammation"),
-        ("X-ray Hands", "10-JAN-2026", "Early erosive changes"),
+        ("OCT RNFL", "18-NOV-2025", "RNFL thinning; superior/inferior loss"),
+        ("OCT Macula", "18-NOV-2025", "Normal macular contour"),
+        ("Visual Field 24-2", "18-NOV-2025", "Arcuate defects; MD -6.2 dB"),
     ],
 
-    # Clinical response (repurposed RECIST)
+    # RECIST (not applicable → but mapping to ophthalmic response)
     "recist": [
-        ("Baseline", "High disease activity (DAS28 5.6)"),
-        ("Cycle 2 Day 1", "Moderate improvement (DAS28 4.2)"),
-        ("Cycle 3 Day 1", "Further improvement (DAS28 3.8)"),
-        ("Cycle 4 Day 1", "Low disease activity (DAS28 3.2)"),
+        ("Baseline", "Progressive optic nerve cupping"),
+        ("Cycle 2 Day 1", "Stable Disease (SD)"),
+        ("Cycle 3 Day 1", "Stable Disease (SD)"),
+        ("Cycle 4 Day 1", "Stable Disease (SD)"),
     ],
-    "best_response": "Low Disease Activity",
+    "best_response": "Stable Disease (SD)",
 
-    # Survival / Follow-up
-    "last_alive": "15-APR-2026",
+    # Survival (ophthalmology → survival not relevant, but keeping schema)
+    "last_alive": "18-APR-2026",
     "progression": "NO",
     "survival_status": "Alive",
-    "investigator": "Dr. Hannah Müller",
-    "signature_date": "15-APR-2026",
+    "investigator": "Dr. Helena Krauss",
+    "signature_date": "18-APR-2026",
 }

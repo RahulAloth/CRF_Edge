@@ -195,6 +195,85 @@ Detectron2 provides optimized implementations of all of these.
 ## ⚙️ 3. How Detectron2 Implements R‑CNN
 
 Detectron2 uses a modular architecture:
+```Code
+Backbone (ResNet, Swin, etc.)
+↓
+Feature Pyramid Network (FPN)
+↓
+Region Proposal Network (RPN)
+↓
+ROIAlign
+↓
+ROI Heads (classification + bbox regression)
+```
 
+### Key Components
 
+- **Backbone**  
+  Extracts multi‑scale features (e.g., ResNet‑50).
+
+- **FPN**  
+  Improves detection of small objects (critical for CRF SDTM boxes).
+
+- **RPN**  
+  Generates region proposals directly from feature maps.
+
+- **ROIAlign**  
+  Precisely extracts features for each proposed region.
+
+- **ROI Heads**  
+  - Classifies region  
+  - Refines bounding box  
+  - (Optional) predicts masks  
+
+This architecture is ideal for **document layout analysis**, **CRF annotation detection**, and **small object detection**.
+
+---
+
+## 🎯 4. Why R‑CNN (Faster R‑CNN) Is Ideal for CRF Annotation Detection
+
+Your CRF dataset contains:
+
+- `section_header`  
+- `sdtm_box`  
+
+These are **small, high‑precision bounding boxes**.  
+Faster R‑CNN is the best model for this because:
+
+- It handles **small objects** extremely well  
+- It is **more accurate** than YOLO for document layouts  
+- It is **deterministic**, which CROs require  
+- It integrates perfectly with Detectron2’s training pipeline  
+- It exports cleanly to ONNX → TensorRT for Jetson J40  
+
+---
+
+## 🔗 5. Public References
+
+- Detectron2 GitHub  
+  https://github.com/facebookresearch/detectron2
+
+- Original R‑CNN Paper (Girshick et al.)  
+  https://arxiv.org/abs/1311.2524
+
+- Faster R‑CNN Paper  
+  https://arxiv.org/abs/1506.01497
+
+- Mask R‑CNN Paper  
+  https://arxiv.org/abs/1703.06870
+
+---
+
+## 📌 6. Summary
+
+R‑CNN is the foundation of Detectron2’s object detection models.  
+For your CRF‑Edge pipeline:
+
+- **Faster R‑CNN** is the correct choice  
+- It gives **maximum accuracy**  
+- It is ideal for **batch processing**  
+- It is perfect for **CRO‑grade reproducibility**  
+- It integrates cleanly with **TensorRT** on Jetson J40  
+
+This is why Detectron2 is the right engine for your commercial CRF product.
 

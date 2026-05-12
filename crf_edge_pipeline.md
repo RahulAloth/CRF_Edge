@@ -1,61 +1,201 @@
-# ⚡ CRF‑Edge Processing Pipeline 
+# ⚡ CRF‑Edge Processing Pipeline Architecture
 
-This pipeline is designed for **high‑accuracy**, **batch‑mode**, **hardware‑locked** CRF processing — ideal for CROs where determinism, reproducibility, and explainability are mandatory.
+```text
+                   ┌──────────────────────────┐
+                   │        CRF PDF           │
+                   └─────────────┬────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────┐
+                   │   PDF → PNG Converter     │
+                   │     (pdf_to_images.py)    │
+                   └─────────────┬────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────┐
+                   │   YOLOv8 Layout Detector  │
+                   │ (train_crf / inference)   │
+                   └─────────────┬────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────┐
+                   │     OCR Engine (Donut)    │
+                   │   (encrypted, device-only)│
+                   └─────────────┬────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────┐
+                   │  Semantic Extractor       │
+                   │ (private, encrypted)      │
+                   └─────────────┬────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────┐
+                   │   Metadata Builder        │
+                   │     (schema.json)         │
+                   └─────────────┬────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────┐
+                   │   CRF Metadata JSON       │
+                   └──────────────────────────┘
+```
+# 1. YOLOv8 Layout Detection
+
+## Purpose
+Identify structural elements of the CRF page, specifically `section_header` and `sdtm_box` regions, using a fast, edge‑optimized object detection model.
+
+## Responsibilities
+- Perform object detection on each CRF page image.
+- Produce deterministic bounding boxes for downstream OCR and semantic extraction.
+- Run efficiently on NVIDIA Jetson hardware using TensorRT FP16 engines.
+
+## Inputs
+- PNG image generated from `pdf_to_images.py`
+- YOLOv8 TensorRT engine (`best.engine`) — encrypted and device‑locked
+
+## Processing Logic
+- Load the TensorRT‑optimized YOLOv8 model.
+- Run inference at 1024×1024 resolution.
+- Filter detections by confidence threshold (default: 0.5).
+- Normalize bounding box coordinates for downstream modules.
+
+## Outputs
+- Bounding boxes for:
+  - `section_header`
+  - `sdtm_box`
+- Detection metadata (class, confidence, coordinates)
+
+## Constraints / Notes
+- Fully offline; no cloud inference.
+- Deterministic output required for CRO compliance.
+- Optimized for Jetson Orin/Nano/Xavier.
 
 ---
 
-## 1. Detectron2 Faster R‑CNN  
-**Task:** Detect `section_header` and `sdtm_box` bounding boxes  
-**Why:** Highest accuracy for small CRF elements
+# 2. Crop SDTM Boxes → OCR
 
-Output:
-- Bounding boxes for section headers  
-- Bounding boxes for SDTM annotation regions  
+## Purpose
+Extract textual content from detected SDTM annotation boxes.
 
----
+## Responsibilities
+- Crop each detected SDTM region.
+- Run OCR using the Donut model (encrypted, device‑only).
+- Produce raw text tokens for semantic interpretation.
 
-## 2. Crop SDTM Boxes → OCR  
-**Task:** Extract variable names from detected SDTM boxes  
-**Tools:** Tesseract / Donut OCR  
-**Why:** CROs require precise variable extraction
+## Inputs
+- Bounding boxes from YOLOv8
+- Original CRF page image
+- Donut OCR engine (encrypted)
 
-Output:
-- Raw text for each SDTM annotation box  
+## Processing Logic
+- Crop image regions using YOLOv8 coordinates.
+- Preprocess crops (resize, normalize).
+- Run Donut OCR to extract text.
+- Return raw text + confidence scores.
 
----
+## Outputs
+- Raw OCR text for each SDTM box
+- Tokenized OCR output (if required)
 
-## 3. Color‑Based Domain Mapping  
-**Task:** Map each SDTM annotation to its CDISC domain  
-**Method:** Use color of the SDTM box (e.g., AE, DM, VS, LB)  
-**Why:** CRFs use color‑coded SDTM annotations
-
-Output:
-- Domain label for each SDTM variable  
-
----
-
-## 4. Donut / LayoutLM Semantic Extraction  
-**Task:** Extract contextual meaning from CRF pages  
-**Why:** Required for metadata generation and BC mapping
-
-Output:
-- Field labels  
-- Section semantics  
-- Contextual relationships  
+## Constraints / Notes
+- Donut model is encrypted and cannot be exported.
+- No cloud OCR allowed (PHI protection).
+- OCR accuracy depends on crop quality.
 
 ---
 
-## 5. Build Metadata JSON  
-**Task:** Combine all extracted information into a structured JSON  
-**Why:** CROs need machine‑readable metadata for downstream SDTM/BC pipelines
+# 3. Color‑Based Domain Mapping
 
-Output:
+## Purpose
+Determine the CDISC domain (e.g., AE, DM, VS, LB) associated with each SDTM annotation based on its color.
+
+## Responsibilities
+- Read color values from SDTM box regions.
+- Map RGB/HEX values to predefined CDISC domain codes.
+- Provide domain labels for metadata generation.
+
+## Inputs
+- Cropped SDTM box images
+- Color‑to‑domain mapping table
+
+## Processing Logic
+- Extract dominant color from each SDTM box.
+- Match color to CDISC domain using threshold‑based comparison.
+- Assign domain label to each variable.
+
+## Outputs
+- Domain label for each SDTM variable (e.g., `DM`, `AE`, `VS`)
+
+## Constraints / Notes
+- CRFs follow standardized color coding.
+- Mapping table is configurable per sponsor.
+
+---
+
+# 4. Donut‑Based Semantic Extraction
+
+## Purpose
+Extract contextual meaning from CRF pages to understand relationships between fields, labels, and sections.
+
+## Responsibilities
+- Interpret OCR text in context.
+- Identify field labels, section semantics, and relationships.
+- Provide structured semantic entities for metadata builder.
+
+## Inputs
+- OCR text from SDTM boxes
+- YOLOv8 bounding boxes
+- Page‑level image context
+
+## Processing Logic
+- Use Donut encoder‑decoder architecture to interpret layout + text.
+- Identify semantic roles (e.g., “Field Label”, “Section Header”).
+- Link SDTM variables to their contextual meaning.
+
+## Outputs
+- Field label associations
+- Section semantics
+- Contextual relationships (e.g., variable → section)
+
+## Constraints / Notes
+- Semantic engine is encrypted and device‑locked.
+- No external NLP services allowed.
+
+---
+
+# 5. Build Metadata JSON
+
+## Purpose
+Generate a structured, machine‑readable CRF Metadata JSON file compliant with CDISC/BC/DSpec requirements.
+
+## Responsibilities
+- Combine layout, OCR, and semantic data.
+- Validate output against `schema.json`.
+- Produce deterministic metadata for downstream SDTM pipelines.
+
+## Inputs
+- YOLOv8 detections
+- OCR text
+- Domain labels
+- Semantic relationships
+
+## Processing Logic
+- Merge all extracted information into a unified metadata structure.
+- Validate fields using JSON schema.
+- Serialize to `crf_metadata.json`.
+
+## Outputs
 - `crf_metadata.json` containing:
   - Section headers  
   - SDTM variables  
   - Domains  
   - Coordinates  
   - Semantic context  
+
+## Constraints / Notes
+- Must be deterministic for regulatory workflows.
+- JSON schema is public; engine logic is private.
 
 ---
 
@@ -64,216 +204,32 @@ Output:
 - **Deterministic** — same input → same output  
 - **Explainable** — bounding boxes + OCR + semantic layers  
 - **Reproducible** — stable across batches and devices  
-- **High accuracy** — Detectron2 + Donut + OCR  
+- **High accuracy** — YOLOv8 + Donut + OCR  
 - **Local processing** — no PHI leaves the device  
-- **Hardware‑locked** — encrypted TensorRT engines tied to Jetson J40  
+- **Hardware‑locked** — encrypted TensorRT engines tied to Jetson hardware  
 
 This architecture is ideal for CRO deployment, regulatory workflows, and large‑scale CRF processing.
 
-
--------
-
-# 📘 Understand R‑CNN in the Context of Detectron2
-
-Detectron2 is Facebook AI Research’s (FAIR) next‑generation library for object detection and segmentation.  
-It implements the entire **R‑CNN family** of models, which form the backbone of modern document‑layout and CRF‑annotation detection systems.
-
-This note explains **what R‑CNN is**, how it evolved, and how Detectron2 uses it internally.
-
 ---
 
-## 🧠 1. What Is R‑CNN?
+# 📘 Notes on Model Architecture (Updated for YOLOv8)
 
-**R‑CNN (Region‑Based Convolutional Neural Network)** is a deep‑learning architecture introduced by Ross Girshick (FAIR) for **object detection**.  
-Instead of scanning the entire image pixel‑by‑pixel, R‑CNN first proposes *regions of interest* and then classifies them.
+- Single‑stage detection → **faster** than R‑CNN  
+- Excellent **small‑object performance** with 1024×1024 images  
+- Native **ONNX + TensorRT export**  
+- Optimized for **Jetson Orin / Nano / Xavier**  
+- Deterministic batch‑mode inference  
 
-R‑CNN introduced two key ideas:
+### YOLOv8 Architecture Summary
 
-1. **Region Proposals**  
-   Use Selective Search to generate ~2,000 candidate bounding boxes.
-
-2. **CNN Feature Extraction**  
-   Each region is cropped, resized, and passed through a CNN to extract features.
-
-3. **Classification + Bounding Box Regression**  
-   - SVM classifier → object category  
-   - Regressor → refine bounding box coordinates  
-
-This architecture became the foundation for all modern detectors.
-
----
-
-## 🧬 2. Evolution of R‑CNN → Detectron2 Models
-
-Detectron2 implements the *entire* R‑CNN family:
-
-### **R‑CNN (2013)**  
-- Region proposals (Selective Search)  
-- CNN per region  
-- Accurate but slow  
-
-### **Fast R‑CNN (2015)**  
-- Shared CNN backbone  
-- ROI Pooling  
-- Much faster  
-
-### **Faster R‑CNN (2015)**  
-- Replaces Selective Search with **Region Proposal Network (RPN)**  
-- End‑to‑end trainable  
-- This is the model you use for CRF annotation detection  
-
-### **Mask R‑CNN (2017)**  
-- Adds segmentation masks  
-- Used for pixel‑level annotation  
-
-Detectron2 provides optimized implementations of all of these.
-
----
-
-## ⚙️ 3. How Detectron2 Implements R‑CNN
-
-Detectron2 uses a modular architecture:
-
-
-# 📘 Understanding R‑CNN in the Context of Detectron2
-
-Detectron2 is Facebook AI Research’s (FAIR) next‑generation library for object detection and segmentation.  
-It implements the entire **R‑CNN family** of models, which form the backbone of modern document‑layout and CRF‑annotation detection systems.
-
-This note explains **what R‑CNN is**, how it evolved, and how Detectron2 uses it internally.
-
----
-
-## 🧠 1. What Is R‑CNN?
-
-**R‑CNN (Region‑Based Convolutional Neural Network)** is a deep‑learning architecture introduced by Ross Girshick (FAIR) for **object detection**.  
-Instead of scanning the entire image pixel‑by‑pixel, R‑CNN first proposes *regions of interest* and then classifies them.
-
-R‑CNN introduced two key ideas:
-
-1. **Region Proposals**  
-   Use Selective Search to generate ~2,000 candidate bounding boxes.
-
-2. **CNN Feature Extraction**  
-   Each region is cropped, resized, and passed through a CNN to extract features.
-
-3. **Classification + Bounding Box Regression**  
-   - SVM classifier → object category  
-   - Regressor → refine bounding box coordinates  
-
-This architecture became the foundation for all modern detectors.
-
----
-
-## 🧬 2. Evolution of R‑CNN → Detectron2 Models
-
-Detectron2 implements the *entire* R‑CNN family:
-
-### **R‑CNN (2013)**  
-- Region proposals (Selective Search)  
-- CNN per region  
-- Accurate but slow  
-
-### **Fast R‑CNN (2015)**  
-- Shared CNN backbone  
-- ROI Pooling  
-- Much faster  
-
-### **Faster R‑CNN (2015)**  
-- Replaces Selective Search with **Region Proposal Network (RPN)**  
-- End‑to‑end trainable  
-- This is the model you use for CRF annotation detection  
-
-### **Mask R‑CNN (2017)**  
-- Adds segmentation masks  
-- Used for pixel‑level annotation  
-
-Detectron2 provides optimized implementations of all of these.
-
----
-
-## ⚙️ 3. How Detectron2 Implements R‑CNN
-
-Detectron2 uses a modular architecture:
-```Code
-Backbone (ResNet, Swin, etc.)
-↓
-Feature Pyramid Network (FPN)
-↓
-Region Proposal Network (RPN)
-↓
-ROIAlign
-↓
-ROI Heads (classification + bbox regression)
+```text
+Image
+ ↓
+Backbone (CSPDarknet / C2f)
+ ↓
+Neck (FPN + PAN)
+ ↓
+Head (Anchor‑free detection)
+ ↓
+Bounding boxes + class scores
 ```
-
-### Key Components
-
-- **Backbone**  
-  Extracts multi‑scale features (e.g., ResNet‑50).
-
-- **FPN**  
-  Improves detection of small objects (critical for CRF SDTM boxes).
-
-- **RPN**  
-  Generates region proposals directly from feature maps.
-
-- **ROIAlign**  
-  Precisely extracts features for each proposed region.
-
-- **ROI Heads**  
-  - Classifies region  
-  - Refines bounding box  
-  - (Optional) predicts masks  
-
-This architecture is ideal for **document layout analysis**, **CRF annotation detection**, and **small object detection**.
-
----
-
-## 🎯 4. Why R‑CNN (Faster R‑CNN) Is Ideal for CRF Annotation Detection
-
-Your CRF dataset contains:
-
-- `section_header`  
-- `sdtm_box`  
-
-These are **small, high‑precision bounding boxes**.  
-Faster R‑CNN is the best model for this because:
-
-- It handles **small objects** extremely well  
-- It is **more accurate** than YOLO for document layouts  
-- It is **deterministic**, which CROs require  
-- It integrates perfectly with Detectron2’s training pipeline  
-- It exports cleanly to ONNX → TensorRT for Jetson J40  
-
----
-
-## 🔗 5. Public References
-
-- Detectron2 GitHub  
-  https://github.com/facebookresearch/detectron2
-
-- Original R‑CNN Paper (Girshick et al.)  
-  https://arxiv.org/abs/1311.2524
-
-- Faster R‑CNN Paper  
-  https://arxiv.org/abs/1506.01497
-
-- Mask R‑CNN Paper  
-  https://arxiv.org/abs/1703.06870
-
----
-
-## 📌 6. Summary
-
-R‑CNN is the foundation of Detectron2’s object detection models.  
-For your CRF‑Edge pipeline:
-
-- **Faster R‑CNN** is the correct choice  
-- It gives **maximum accuracy**  
-- It is ideal for **batch processing**  
-- It is perfect for **CRO‑grade reproducibility**  
-- It integrates cleanly with **TensorRT** on Jetson J40  
-
-This is why Detectron2 is the right engine for your commercial CRF product.
-

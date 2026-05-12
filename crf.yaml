@@ -1,0 +1,7 @@
+path: crf_dataset
+train: train
+val: val
+
+names:
+  0: header
+  1: field

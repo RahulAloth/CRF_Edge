@@ -4,6 +4,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor, white
 import importlib.util
 from annotation_engine import annotate_field, domain_legend # and ANN_COLORS, etc.
+# from annotation_engine_ohne_arrow import annotate_field, domain_legend # and ANN_COLORS, etc.
 
 spec = importlib.util.spec_from_file_location("crf_data", "secure_data/dummy_data.pyc")
 crf_data = importlib.util.module_from_spec(spec)

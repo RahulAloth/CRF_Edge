@@ -141,7 +141,7 @@ CRF_PARAMS_LUNG_CANCER = {
     "signature_date": "10‑APR‑2026",
 }
 
-CRF_PARAMS_COLATORAL_CANCER = {
+CRF_PARAMS_COLON_CANCER = {
     "crf_name": "crf_colatoral_cancer",
     "study_id": "CRC‑2026‑113",
     "site_number": "027",
@@ -547,3 +547,136 @@ CRF_PARAMS_CARDIOVASCULAR = {
     "signature_date": "15‑APR‑2026",
 }
 
+CRF_PARAMS_GLAUCOMA = {
+    "crf_name": "crf_glaucoma",
+    "study_id": "GLA-2026-014",
+    "site_number": "112",
+    "subject_id": "GLA-112-0874",
+    "screening_number": "SCR-2026-311",
+    "dob": "14-MAY-1965",
+    "sex": "Female",
+    "ethnicity": "Hispanic or Latino",
+    "race": "White",
+    "height": "165",
+    "weight": "68.2",
+    "bmi": "25.1",
+    "consent_date": "05-JAN-2026",
+
+    # Diagnosis
+    "primary_site": "Bilateral Primary Open-Angle Glaucoma",
+    "histology": "Not applicable (ophthalmic disease)",
+    "diagnosis_date": "18-NOV-2025",
+    "tnm": "Not applicable",
+    "stage": "Moderate Stage (Hodapp–Parrish–Anderson)",
+    "metastatic": "NO",
+    "biomarkers": "Optic nerve cupping; RNFL thinning on OCT",
+    "ki67": "Not applicable",
+    "brca": "Not applicable",
+
+    # Target lesions (analogous → ophthalmology uses structural metrics)
+    "tl1_loc": "Right Eye — Optic Nerve Head",
+    "tl1_diam": "0.78 (cup-to-disc ratio)",
+    "tl2_loc": "Left Eye — Optic Nerve Head",
+    "tl2_diam": "0.74 (cup-to-disc ratio)",
+    "tl3_loc": "Right Eye — RNFL Thickness",
+    "tl3_diam": "62 (µm)",
+    "baseline_imaging": "OCT RNFL + OCT Macula + Visual Field (24-2)",
+
+    # Non-target lesions
+    "ntl1": "Peripheral visual field defects (Right Eye)",
+    "ntl2": "Inferior arcuate scotoma (Left Eye)",
+    "ntl3": "No retinal detachment",
+    "other_findings": "No diabetic retinopathy",
+
+    # ECOG (not relevant → but keeping structure for schema consistency)
+    "ecog": ["0", "0", "0", "0", "0"],
+
+    # Vitals
+    "vital_date": "18-NOV-2025",
+    "sbp": "132",
+    "dbp": "82",
+    "hr": "78",
+    "rr": "16",
+    "temp": "36.7",
+
+    # Concomitant meds
+    "conmeds": [
+        ("Latanoprost", "Glaucoma", "18-NOV-2025", "Ongoing"),
+        ("Timolol", "Glaucoma", "18-NOV-2025", "Ongoing"),
+        ("Atorvastatin", "Hyperlipidemia", "01-JAN-2024", "Ongoing"),
+        ("Vitamin D", "Supplement", "01-MAR-2025", "Ongoing"),
+    ],
+
+    # Medical history
+    "medical_history": [
+        ("Hypertension", "2018", True, "Controlled on medication"),
+        ("Hyperlipidemia", "2020", True, "On atorvastatin"),
+        ("Myopia", "Childhood", False, "Stable"),
+        ("Family History of Glaucoma", "—", False, "Mother diagnosed at 62"),
+        ("Dry Eye Syndrome", "2023", False, "Mild"),
+    ],
+
+    # Treatment regimen
+    "arm": "Arm B — Dual Therapy (Prostaglandin + Beta-blocker)",
+    "regimen": "Latanoprost + Timolol",
+    "cycle_length": "30",
+    "planned_cycles": "12 months continuous therapy",
+    "treatment_start": "10-JAN-2026",
+    "treatment_end": "JAN-2027",
+
+    # Cycle visits
+    "cycle1_date": "10-JAN-2026",
+    "cycle2_date": "10-FEB-2026",
+    "cycle3_date": "10-MAR-2026",
+
+    # AEs
+    "aes_page1": [
+        ("Eye redness", "12-JAN-2026", "Ongoing", "Mild", "Related", "Ongoing"),
+        ("Dryness/irritation", "15-JAN-2026", "Ongoing", "Mild", "Related", "Ongoing"),
+    ],
+    "aes_page2": [
+        ("Fatigue (from beta-blocker)", "20-JAN-2026", "05-FEB-2026", "Mild", "Related", "Recovered"),
+        ("Mild bradycardia", "01-FEB-2026", "Ongoing", "Moderate", "Possibly Related", "Ongoing"),
+    ],
+
+    # Labs (ophthalmology rarely uses labs → but keeping schema)
+    "hematology": [
+        ("Hemoglobin", "12.9", "g/dL", "Normal"),
+        ("WBC", "5.8", "x10⁹/L", "Normal"),
+        ("Platelets", "275", "x10⁹/L", "Normal"),
+        ("Neutrophils", "3.2", "x10⁹/L", "Normal"),
+        ("Lymphocytes", "1.4", "x10⁹/L", "Normal"),
+    ],
+    "chemistry": [
+        ("ALT", "29", "U/L", "Normal"),
+        ("AST", "25", "U/L", "Normal"),
+        ("Creatinine", "0.8", "mg/dL", "Normal"),
+        ("BUN", "14", "mg/dL", "Normal"),
+        ("Glucose", "102", "mg/dL", "Normal"),
+        ("Sodium", "140", "mmol/L", "Normal"),
+        ("Potassium", "4.1", "mmol/L", "Normal"),
+    ],
+
+    # Imaging
+    "imaging": [
+        ("OCT RNFL", "18-NOV-2025", "RNFL thinning; superior/inferior loss"),
+        ("OCT Macula", "18-NOV-2025", "Normal macular contour"),
+        ("Visual Field 24-2", "18-NOV-2025", "Arcuate defects; MD -6.2 dB"),
+    ],
+
+    # RECIST (not applicable → but mapping to ophthalmic response)
+    "recist": [
+        ("Baseline", "Progressive optic nerve cupping"),
+        ("Cycle 2 Day 1", "Stable Disease (SD)"),
+        ("Cycle 3 Day 1", "Stable Disease (SD)"),
+        ("Cycle 4 Day 1", "Stable Disease (SD)"),
+    ],
+    "best_response": "Stable Disease (SD)",
+
+    # Survival (ophthalmology → survival not relevant, but keeping schema)
+    "last_alive": "18-APR-2026",
+    "progression": "NO",
+    "survival_status": "Alive",
+    "investigator": "Dr. Helena Krauss",
+    "signature_date": "18-APR-2026",
+}

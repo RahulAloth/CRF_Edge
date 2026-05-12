@@ -21,6 +21,19 @@ spec.loader.exec_module(crf_data)
 # Change the value below to switch between different CRF datasets.
 # ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+# Configuration Parameter
+# ------------------------------------------------------------------------------
+# Select the active CRF schema for generating the 20‑page CRF.
+#
+# Available CRF parameter dictionaries:
+#   - CRF_PARAMS_LUNG_CANCER
+#   - CRF_PARAMS_COLON_CANCER
+#   - CRF_PARAMS_SKIN_CANCER
+#   - CRF_PARAMS_CARDIOVASCULAR
+#
+# Change the value below to switch between different CRF datasets.
+# ------------------------------------------------------------------------------
 CRF_PARAMS = crf_data.CRF_PARAMS_CARDIOVASCULAR
 
 import os

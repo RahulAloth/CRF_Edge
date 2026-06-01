@@ -190,3 +190,86 @@ Claude is the **reasoning engine**, not the **orchestration engine**.
 | Code generation | ⭐⭐⭐ Very High | Claude is one of the best models |
 | Validation rules | ⭐⭐⭐ Very High | Claude can generate rules |
 | Submission docs | ⭐⭐⭐ Very High | Claude can write all metadata text |
+
+
+----- CRF-------------
+# 📌 TODO — CDISC 360i: Direct BC + DSpec Generation Pipeline
+
+## ✅ 1. Input: CRF JSON (from YOLO)
+- [ ] Load YOLO‑generated CRF JSON  
+- [ ] Extract field text, units, bounding boxes  
+- [ ] Validate JSON structure  
+- [ ] Remove empty or low‑confidence fields  
+
+---
+
+## 🔧 2. Normalize CRF Text (Required before BC/DSpec)
+- [ ] Clean OCR noise (typos, broken tokens, casing)  
+- [ ] Standardize units (mg/dL → mg/dL, %, etc.)  
+- [ ] Expand abbreviations (Hb → Hemoglobin)  
+- [ ] Remove garbage characters  
+- [ ] Convert synonyms to canonical CDISC terms  
+- [ ] Use MedicalBERT + ChromaDB to:
+  - [ ] Retrieve closest COSMoS terms  
+  - [ ] Replace noisy text with normalized text  
+
+---
+
+## 🧠 3. RAG Retrieval (MedicalBERT + ChromaDB)
+For each normalized CRF field:
+- [ ] Embed field text using MedicalBERT  
+- [ ] Query ChromaDB for:
+  - [ ] BC definitions  
+  - [ ] SDTM variables  
+  - [ ] Controlled Terminology  
+  - [ ] DEC / Value‑Level Metadata  
+- [ ] Collect top‑k relevant rows  
+- [ ] Prepare RAG context block for LLM  
+
+---
+
+## 🤖 4. GenAI (Mistral) — Generate Two JSONs
+For each CRF field, generate:
+
+### **BC JSON**
+- [ ] bc_name  
+- [ ] bc_id  
+- [ ] description  
+- [ ] data_type  
+- [ ] units  
+- [ ] codelist / CT  
+- [ ] SDTM mapping  
+- [ ] Value‑level metadata  
+
+### **DSpec JSON**
+- [ ] Dataset name (domain)  
+- [ ] Variable definitions  
+- [ ] Origin (CRF / Derived / Assigned)  
+- [ ] Codelists  
+- [ ] BC linkage (bc_ref)  
+- [ ] Implementation metadata  
+
+---
+
+## 📤 5. Output
+- [ ] Save final output as:
+  - `bc_json_<field>.json`
+  - `dspec_json_<field>.json`
+- [ ] Validate JSON schema  
+- [ ] Store in `/output/cdisc360i/`  
+
+---
+
+## 🧪 6. Validation
+- [ ] Check BC JSON against COSMoS definitions  
+- [ ] Check DSpec JSON against SDTM IG rules  
+- [ ] Ensure units match CT  
+- [ ] Ensure variable roles match domain  
+- [ ] Ensure BC ↔ DSpec linkage is correct  
+
+---
+
+## 🚀 7. Final Integration
+- [ ] Combine all BC JSONs into a BC package  
+- [ ] Combine all DSpec JSONs into a dataset specification  
+- [ ] Prepare for CDISC 360i ingestion  

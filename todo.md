@@ -272,4 +272,121 @@ For each CRF field, generate:
 ## 🚀 7. Final Integration
 - [ ] Combine all BC JSONs into a BC package  
 - [ ] Combine all DSpec JSONs into a dataset specification  
-- [ ] Prepare for CDISC 360i ingestion  
+- [ ] Prepare for CDISC 360i ingestion
+
+# CDISC Edge Solution – High-Level Design
+
+## 1. Product summary
+
+A **privacy‑preserving Edge AI engine** that runs **where clinical data resides** (hospital on‑prem, private cloud, edge devices) and:
+
+- Extracts data from **unstructured + structured clinical sources**
+- Converts it into **CDISC‑compliant metadata and datasets**
+- Provides **full traceability, auditability, and validation readiness (GxP / 21 CFR Part 11)**
+
+> Not an EDC. Not a cloud SaaS.  
+> It is an **AI‑powered transformation engine** that augments existing clinical data systems.
+
+---
+
+## 2. Core components
+
+### 2.1 Edge AI inference engine
+
+- **Targets:**
+  - Jetson Orin / Jetson Nano
+  - Industrial PCs
+  - On‑prem hospital servers
+  - Private cloud VMs (Docker/K8s)
+
+- **Capabilities:**
+  - OCR (e.g., Riva OCR or equivalent)
+  - Clinical NLP (e.g., ClinicalBERT)
+  - Entity extraction
+  - Field mapping
+  - Metadata generation
+
+- **Key property:**  
+  All inference runs **locally** — no PHI/PII leaves the environment.
+
+---
+
+### 2.2 Clinical data extraction pipeline
+
+- **Inputs:**
+  - Scanned CRFs
+  - Physician notes
+  - PDFs
+  - EHR exports
+  - Lab reports
+
+- **Outputs:**
+  - CDASH‑like structures
+  - Biomedical Concepts (BCs)
+  - DSpec / Define‑XML metadata
+  - SDTM‑ready structures
+
+- **Value:**  
+  Bridges **unstructured → structured → CDISC** automatically.
+
+---
+
+### 2.3 Metadata‑driven transformation
+
+- **Aligned with:**
+  - CDISC 360 concepts
+  - Linked metadata
+  - Biomedical Concepts
+  - Reusable mappings and rules
+
+- **Everything as metadata:**
+  - Forms
+  - Fields
+  - Mappings
+  - Rules
+  - Controlled terminology
+
+> Engine = generic.  
+> Behavior = driven by metadata, not hard‑coded logic.
+
+---
+
+### 2.4 Human‑in‑the‑loop validation
+
+- Confidence scores per field
+- Side‑by‑side view: source vs extracted vs mapped
+- Manual correction + approval
+- Full audit trail (who changed what, when, why)
+- Versioned models and configurations
+- Traceability: **source → model version → output**
+
+> Designed to be **GxP‑friendly** and **21 CFR Part 11‑compatible**.
+
+---
+
+### 2.5 Hardware‑locked runtime (moat)
+
+- Encrypted model + runtime
+- Bound to specific hardware ID
+- Cannot run outside licensed device
+
+**Business model:**
+
+- Framework can be open‑source
+- Inference engine is **proprietary + hardware‑locked**
+
+---
+
+### 2.6 Integration layer
+
+- **Exports to:**
+  - SDTM datasets
+  - Define‑XML
+  - EDC import formats
+  - CSV/JSON for downstream pipelines
+
+> Goal: **augment**, not replace, existing EDC / CDISC tooling.
+
+---
+
+

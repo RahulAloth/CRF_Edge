@@ -7,7 +7,7 @@
     {
         "page": 1,
         "raw_text": "Screening Number",
-        "suggested": "DM"
+        "suggested": "DMTest"
     },
     {
         "page": 1,
@@ -32,7 +32,7 @@
     {
         "page": 1,
         "raw_text": "Country",
-        "suggested": "DM"
+        "suggested": "DMTest"
     },
     {
         "page": 1,
@@ -82,7 +82,7 @@
     {
         "page": 2,
         "raw_text": "Unscheduled Visit 1 Date",
-        "suggested": "DM"
+        "suggested": "DMtest"
     },
     {
         "page": 2,

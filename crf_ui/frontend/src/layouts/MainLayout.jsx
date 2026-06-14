@@ -6,20 +6,15 @@ import {
   ListItemText,
   Typography,
   Button,
+  Divider,
 } from "@mui/material";
 
-const drawerWidth = 300;
+const drawerWidth = 360;
 
-export default function MainLayout({ children, onSelectView, onSave }) {
+export default function MainLayout({ children, onSelectView, onSave, currentView }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        width: "100vw",
-        overflow: "hidden",
-      }}
-    >
+    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+      
       {/* Sidebar */}
       <Drawer
         variant="permanent"
@@ -28,74 +23,96 @@ export default function MainLayout({ children, onSelectView, onSave }) {
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: drawerWidth,
-            background: "#0d1b2a",
-            color: "white",
-            padding: "16px 8px",
             boxSizing: "border-box",
-            borderRight: "none",
+            padding: "20px 16px",
             display: "flex",
             flexDirection: "column",
+            gap: "20px",
+            backgroundColor: "#0A3D91",   // ⭐ Blue variant
+            color: "white",
           },
         }}
       >
         {/* Title */}
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 2,
-            fontWeight: "bold",
-            textAlign: "center",
-            lineHeight: 1.3,
-          }}
-        >
-          CRF Annotation
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          CRF Annotation  
           <br />
           Human In Loop
         </Typography>
 
+        <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
+
         {/* Navigation */}
         <List sx={{ flexGrow: 1 }}>
-          <ListItemButton onClick={() => onSelectView("pdfViewer")}>
+          <ListItemButton
+            selected={currentView === "pdfViewer"}
+            onClick={() => onSelectView("pdfViewer")}
+            sx={{
+              borderRadius: "6px",
+              "&.Mui-selected": {
+                backgroundColor: "rgba(255,255,255,0.2)",
+              },
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.15)",
+              },
+            }}
+          >
             <ListItemText primary="PDF Viewer" />
           </ListItemButton>
 
-          <ListItemButton onClick={() => onSelectView("crfViewer")}>
+          <ListItemButton
+            selected={currentView === "crfViewer"}
+            onClick={() => onSelectView("crfViewer")}
+            sx={{
+              borderRadius: "6px",
+              "&.Mui-selected": {
+                backgroundColor: "rgba(255,255,255,0.2)",
+              },
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.15)",
+              },
+            }}
+          >
             <ListItemText primary="CRF Viewer" />
           </ListItemButton>
-
-          {/* Add more modules here later */}
         </List>
+
+        <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
 
         {/* Save Button */}
         <Button
           variant="contained"
-          color="primary"
-          sx={{ width: "100%", mb: 1 }}
           onClick={onSave}
+          disabled={currentView !== "crfViewer"}
+          sx={{
+            backgroundColor: "white",
+            color: "#0A3D91",
+            fontWeight: 600,
+            "&:hover": {
+              backgroundColor: "#e6e6e6",
+            },
+            "&:disabled": {
+              backgroundColor: "rgba(255,255,255,0.5)",
+              color: "#0A3D91",
+            },
+          }}
         >
           Save Changes
         </Button>
       </Drawer>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div
         style={{
           flexGrow: 1,
           height: "100vh",
           overflow: "hidden",
+          padding: "10px",
+          background: "#f5f6fa",
           display: "flex",
-          flexDirection: "column",
         }}
       >
-        <div
-          style={{
-            flexGrow: 1,
-            minHeight: 0,
-            overflow: "hidden",
-          }}
-        >
-          {children}
-        </div>
+        <div style={{ flexGrow: 1, overflow: "hidden" }}>{children}</div>
       </div>
     </div>
   );

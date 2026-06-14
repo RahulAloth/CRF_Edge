@@ -9,10 +9,9 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
 export default function App() {
-  // Default view is CRF Input Viewer
   const [view, setView] = useState("crfInputViewer");
 
-  // Stores uploaded CRF PDF
+  // ⭐ Stores uploaded CRF PDF
   const [inputPdfFile, setInputPdfFile] = useState(null);
 
   const [toastOpen, setToastOpen] = useState(false);
@@ -42,7 +41,7 @@ export default function App() {
         onGenerate={handleGenerate}
         currentView={view}
         setInputPdfFile={setInputPdfFile}
-        inputPdfFile={inputPdfFile}   // ⭐ CRITICAL FIX
+        inputPdfFile={inputPdfFile}
       >
         {/* ⭐ ROUTING */}
         {view === "crfInputViewer" && (

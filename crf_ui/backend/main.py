@@ -131,3 +131,31 @@ async def upload_pdf(file: UploadFile = File(...)):
 async def health_check():
     return {"status": "ok"}
 
+# ---------------------------------------------------------
+# 7️⃣ Upload Input CRF (PDF only)
+# ---------------------------------------------------------
+INPUT_CRF_DIR = "input_crf"
+os.makedirs(INPUT_CRF_DIR, exist_ok=True)
+
+@app.post("/api/upload/input-crf")
+async def upload_input_crf(file: UploadFile = File(...)):
+    # Validate file type
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    save_path = os.path.join(INPUT_CRF_DIR, file.filename)
+
+    try:
+        with open(save_path, "wb") as buffer:
+            buffer.write(await file.read())
+
+        return {
+            "message": "Input CRF PDF uploaded successfully",
+            "filename": file.filename,
+            "saved_to": save_path
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving Input CRF: {e}")
+
+

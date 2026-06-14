@@ -15,3 +15,19 @@ export async function saveCRF(rowsWithoutId) {
   return response.json();
 }
 
+export async function uploadInputCRF(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE}/upload/input-crf`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to upload Input CRF");
+  }
+
+  return response.json();
+}
+

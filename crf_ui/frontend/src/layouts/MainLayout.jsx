@@ -9,6 +9,8 @@ import {
   Divider,
 } from "@mui/material";
 
+import { uploadInputCRF } from "../api/backend";   // ⭐ API call
+
 const drawerWidth = 360;
 
 export default function MainLayout({
@@ -18,8 +20,27 @@ export default function MainLayout({
   onGenerate,
   currentView,
   setInputPdfFile,
-  inputPdfFile,   // ⭐ Needed to enable Generate
+  inputPdfFile,
 }) {
+  // ⭐ Handle file selection + backend upload
+  const handleInputCRFUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 1️⃣ Save file in React state (enables Generate button)
+    setInputPdfFile(file);
+
+    // 2️⃣ Upload to backend
+    try {
+      const result = await uploadInputCRF(file);
+      console.log("Uploaded to backend:", result);
+      alert("Input CRF uploaded successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload Input CRF");
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
       
@@ -48,7 +69,7 @@ export default function MainLayout({
           HITL
         </Typography>
 
-        {/* ⭐ Load CRF Input (same size as buttons) */}
+        {/* ⭐ Load CRF Input */}
         <div
           onClick={() => document.getElementById("pdfInputFile").click()}
           style={{
@@ -68,13 +89,13 @@ export default function MainLayout({
           Load CRF Input
         </div>
 
-        {/* Hidden file input */}
+        {/* ⭐ Hidden file input */}
         <input
           id="pdfInputFile"
           type="file"
           accept="application/pdf"
-          onChange={(e) => setInputPdfFile(e.target.files[0])}
           style={{ display: "none" }}
+          onChange={handleInputCRFUpload}
         />
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
@@ -82,7 +103,7 @@ export default function MainLayout({
         {/* Navigation */}
         <List sx={{ flexGrow: 1 }}>
 
-          {/* ⭐ CRF INPUT VIEWER */}
+          {/* CRF INPUT VIEWER */}
           <ListItemButton
             selected={currentView === "crfInputViewer"}
             onClick={() => onSelectView("crfInputViewer")}
@@ -95,7 +116,7 @@ export default function MainLayout({
             <ListItemText primary="CRF Input Viewer" />
           </ListItemButton>
 
-          {/* ⭐ CRF OUTPUT VIEWER */}
+          {/* CRF OUTPUT VIEWER */}
           <ListItemButton
             selected={currentView === "crfOutputViewer"}
             onClick={() => onSelectView("crfOutputViewer")}
@@ -108,7 +129,7 @@ export default function MainLayout({
             <ListItemText primary="CRF Output Viewer" />
           </ListItemButton>
 
-          {/* ⭐ CRF‑SDTM MAP */}
+          {/* CRF‑SDTM MAP */}
           <ListItemButton
             selected={currentView === "crfSdtmMap"}
             onClick={() => onSelectView("crfSdtmMap")}

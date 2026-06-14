@@ -12,7 +12,7 @@
     {
         "page": 1,
         "raw_text": "Randomization Number",
-        "suggested": "DM"
+        "suggested": "DMTester"
     },
     {
         "page": 1,
@@ -27,7 +27,7 @@
     {
         "page": 1,
         "raw_text": "Sex",
-        "suggested": "Test"
+        "suggested": "RM Changed"
     },
     {
         "page": 1,
@@ -252,7 +252,7 @@
     {
         "page": 6,
         "raw_text": "Lab: Hemoglobin",
-        "suggested": "LB"
+        "suggested": "Test It Again"
     },
     {
         "page": 6,

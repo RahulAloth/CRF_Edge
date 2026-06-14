@@ -35,9 +35,9 @@ export default function MainLayout({ children, onSelectView, onSave, currentView
       >
         {/* Title */}
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          CRF Annotation  
+          CRF Edge
           <br />
-          Human In Loop
+          HITL
         </Typography>
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />

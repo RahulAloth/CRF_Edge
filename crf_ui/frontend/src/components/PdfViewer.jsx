@@ -7,8 +7,8 @@ export default function PdfViewer() {
   useEffect(() => {
     const url = "http://127.0.0.1:8000/api/pdf";
 
-    // Check if backend PDF exists
-    fetch(url, { method: "HEAD" })
+    // Reliable check: GET without downloading full PDF
+    fetch(url, { method: "GET" })
       .then((res) => {
         if (res.ok) {
           setPdfUrl(url);

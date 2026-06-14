@@ -32,8 +32,8 @@ The system includes:
 ## 1️⃣ Clone the repository
 
 ```code
-    git clone <your-repo-url>
-    cd your-project
+    git clone <CRF_Edge>
+    cd /crf_ui
 ```
 ---
 
@@ -191,7 +191,7 @@ Sidebar buttons:
 ```
 ---
 
-# 📌 Next Enhancements (Optional)
+# 📌 Next Enhancements (TODO)
 
 - Status badges (Pending / Approved / Rejected)
 - Row‑level Approve/Reject buttons

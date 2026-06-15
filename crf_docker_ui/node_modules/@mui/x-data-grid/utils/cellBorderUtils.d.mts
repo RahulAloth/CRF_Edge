@@ -1,0 +1,4 @@
+import type { DataGridProcessedProps } from "../models/props/DataGridProps.mjs";
+import { PinnedColumnPosition } from "../internals/constants.mjs";
+export declare const shouldCellShowRightBorder: (pinnedPosition: PinnedColumnPosition | undefined, indexInSection: number, sectionLength: number, showCellVerticalBorderRootProp: DataGridProcessedProps["showCellVerticalBorder"], gridHasFiller: boolean, pinnedColumnsSectionSeparatorRootProp: DataGridProcessedProps["pinnedColumnsSectionSeparator"]) => boolean;
+export declare const shouldCellShowLeftBorder: (pinnedPosition: PinnedColumnPosition | undefined, indexInSection: number, showCellVerticalBorderRootProp: DataGridProcessedProps["showCellVerticalBorder"], pinnedColumnsSectionSeparatorRootProp: DataGridProcessedProps["pinnedColumnsSectionSeparator"]) => boolean;

@@ -1,0 +1,2 @@
+import type { PinnedColumnPosition } from "../constants.mjs";
+export declare function attachPinnedStyle(style: React.CSSProperties, isRtl: boolean, pinnedPosition: PinnedColumnPosition | undefined, pinnedOffset?: number): import("react").CSSProperties;

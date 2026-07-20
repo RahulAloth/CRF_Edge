@@ -1,0 +1,2 @@
+import type { GridBaseIconProps } from "../../models/gridSlotsComponentsProps.mjs";
+export declare const createSvgIcon: (path: React.ReactNode, displayName?: string) => (props: GridBaseIconProps) => React.ReactNode;

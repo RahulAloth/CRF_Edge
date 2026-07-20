@@ -1,0 +1,1 @@
+export default function useRefCallback(fn: (node: HTMLDivElement) => (() => void) | undefined): (node: HTMLDivElement | null) => (() => void | undefined) | undefined;

@@ -1,0 +1,502 @@
+[
+    {
+        "page": 1,
+        "raw_text": "Patient ID",
+        "suggested": "DM"
+    },
+    {
+        "page": 1,
+        "raw_text": "Screening Number",
+        "suggested": "DMTestadf"
+    },
+    {
+        "page": 1,
+        "raw_text": "Randomization Number",
+        "suggested": "DMTester"
+    },
+    {
+        "page": 1,
+        "raw_text": "Initials",
+        "suggested": "DM"
+    },
+    {
+        "page": 1,
+        "raw_text": "Date of Birth",
+        "suggested": "DMChanged"
+    },
+    {
+        "page": 1,
+        "raw_text": "Sex",
+        "suggested": "RM Changed"
+    },
+    {
+        "page": 1,
+        "raw_text": "Country",
+        "suggested": "DMTest"
+    },
+    {
+        "page": 1,
+        "raw_text": "Site Number",
+        "suggested": "DM"
+    },
+    {
+        "page": 1,
+        "raw_text": "Investigator Name",
+        "suggested": "DM"
+    },
+    {
+        "page": 1,
+        "raw_text": "Informed Consent Date",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Visit 1 Date",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Visit 1 Type",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Visit 2 Date",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Visit 2 Type",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Visit 3 Date",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Visit 3 Type",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Unscheduled Visit 1 Date",
+        "suggested": "DMtest"
+    },
+    {
+        "page": 2,
+        "raw_text": "Unscheduled Visit 1 Reason",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Unscheduled Visit 2 Date",
+        "suggested": "DM"
+    },
+    {
+        "page": 2,
+        "raw_text": "Unscheduled Visit 2 Reason",
+        "suggested": "DM"
+    },
+    {
+        "page": 3,
+        "raw_text": "Height (cm)",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Weight (kg)",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "BMI (kg/m2)",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Systolic Blood Pressure",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Diastolic Blood Pressure",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Heart Rate",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Respiratory Rate",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Temperature",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Oxygen Saturation",
+        "suggested": "VS"
+    },
+    {
+        "page": 3,
+        "raw_text": "Position During Measurement",
+        "suggested": "VS"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 1 Name",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 1 Dose",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 1 Route",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 1 Start Date",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 1 Stop Date",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 2 Name",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 2 Dose",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 2 Route",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 2 Start Date",
+        "suggested": "CM"
+    },
+    {
+        "page": 4,
+        "raw_text": "Concomitant Medication 2 Stop Date",
+        "suggested": "CM"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 1 Term",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 1 Start Date",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 1 Stop Date",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 1 Severity",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 1 Serious",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 1 Outcome",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 2 Term",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 2 Start Date",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 2 Stop Date",
+        "suggested": "AE"
+    },
+    {
+        "page": 5,
+        "raw_text": "Adverse Event 2 Severity",
+        "suggested": "AE"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: Hemoglobin",
+        "suggested": "Test It Again"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: Hematocrit",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: Platelets",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: White Blood Cells",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: Neutrophils",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: Lymphocytes",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: Creatinine",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: Urea",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: ALT",
+        "suggested": "LB"
+    },
+    {
+        "page": 6,
+        "raw_text": "Lab: AST",
+        "suggested": "LB"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG Date",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG Time",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG Heart Rate",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG PR Interval",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG QRS Duration",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG QT Interval",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG QTc",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG Interpretation",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG Clinically Significant",
+        "suggested": "EG"
+    },
+    {
+        "page": 7,
+        "raw_text": "ECG Comments",
+        "suggested": "EG"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 1 Term",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 1 Start Date",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 1 Ongoing",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 2 Term",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 2 Start Date",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 2 Ongoing",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 3 Term",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 3 Start Date",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Medical History 3 Ongoing",
+        "suggested": "MH"
+    },
+    {
+        "page": 8,
+        "raw_text": "Family History Relevant",
+        "suggested": "MH"
+    },
+    {
+        "page": 9,
+        "raw_text": "Inclusion Criterion 1 Met",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Inclusion Criterion 2 Met",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Inclusion Criterion 3 Met",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Exclusion Criterion 1 Met",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Exclusion Criterion 2 Met",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Exclusion Criterion 3 Met",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Eligibility Confirmed",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Eligibility Confirmation Date",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Eligibility Comments",
+        "suggested": "IE"
+    },
+    {
+        "page": 9,
+        "raw_text": "Screen Failure Reason",
+        "suggested": "IE"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Name",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Dose",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Unit",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Route",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Frequency",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Start Date",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Stop Date",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Study Drug Interrupted",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Reason for Interruption",
+        "suggested": "EX"
+    },
+    {
+        "page": 10,
+        "raw_text": "Compliance Percentage",
+        "suggested": "EX"
+    }
+]

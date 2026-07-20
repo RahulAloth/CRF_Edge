@@ -1,0 +1,3 @@
+import { PinnedColumnPosition } from "../constants.mjs";
+import type { gridColumnPositionsSelector } from "../../hooks/features/columns/index.mjs";
+export declare const getPinnedCellOffset: (pinnedPosition: PinnedColumnPosition | undefined, computedWidth: number, columnIndex: number, columnPositions: ReturnType<typeof gridColumnPositionsSelector>, columnsTotalWidth: number, scrollbarWidth: number) => number | undefined;

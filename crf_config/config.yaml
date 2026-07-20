@@ -1,0 +1,14 @@
+model:
+  engine_path: "/app/models/yolo.engine"
+
+input:
+  image_path: "/app/data/input.jpg"
+  width: 640
+  height: 640
+
+inference:
+  confidence_threshold: 0.45
+  nms_threshold: 0.50
+
+output:
+  base_path: "/app/output"

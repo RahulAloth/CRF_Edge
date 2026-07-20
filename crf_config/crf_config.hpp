@@ -12,8 +12,18 @@ class ConfigManager {
 public:
     int load(const std::string& path);
     template<typename T>
-    T getValue(const std::string& key) const {
-        return std::get<T>(configMap_.at(key));
+    T getValue(const std::string& key) {
+        const std::string& raw = std::get<std::string>(configMap_.at(key));
+
+        if constexpr (std::is_same_v<T, int>) {
+            return std::stoi(raw);
+        } else if constexpr (std::is_same_v<T, double>) {
+            return std::stod(raw);
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return (raw == "true" || raw == "1");
+        } else {
+            return raw;
+        }
     }
 
 

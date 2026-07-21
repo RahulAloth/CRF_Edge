@@ -22,7 +22,7 @@ The **framework is open‑source**, while the **intelligence (AI models, mapping
 PDF → Images → YOLO Layout Detection → OCR → Metadata Builder → JSON
 
 ---
-## Detection Engine Algorithm 
+## Detection Inference Engine Architecture
 <img width="1057" height="1280" alt="architecture" src="https://github.com/user-attachments/assets/1ae279bc-f3fe-4d68-8b96-6c1a3c0a3ced" />
 
 ## 📁 Repository Structure

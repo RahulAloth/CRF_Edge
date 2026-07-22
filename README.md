@@ -4,6 +4,9 @@ CRF_Edge is a modular, privacy‑preserving pipeline that converts Clinical Repo
 The **framework is open‑source**, while the **intelligence (AI models, mapping engines, SDTM logic)** remains **encrypted and device‑locked**.
 
 ---
+## Confidentiality  
+Some parts of this code are kept private to protect my proof‑of‑concept. The [integration layer](https://github.com/RahulAloth/crf_edge_deployment) automatically connects the components into the embedded SoC.
+
 
 ## ✨ Key Features
 

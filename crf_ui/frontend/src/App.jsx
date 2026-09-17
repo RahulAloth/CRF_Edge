@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import MainLayout from "./layouts/MainLayout";
 
 import PDFInputViewer from "./components/PDFInputViewer";
@@ -11,12 +11,23 @@ import Alert from "@mui/material/Alert";
 export default function App() {
   const [view, setView] = useState("crfInputViewer");
 
-  // ⭐ Stores uploaded CRF PDF
+  // ⭐ Stores uploaded CRF PDF (actual File object)
   const [inputPdfFile, setInputPdfFile] = useState(null);
+
+  // ⭐ Stores filename returned by backend
+  const [filename, setFilename] = useState("");
+
+  // ⭐ Job tracking
+  const [jobId, setJobId] = useState(null);
+  const [jobStatus, setJobStatus] = useState("");
+  const [jobMessage, setJobMessage] = useState("");
 
   const [toastOpen, setToastOpen] = useState(false);
   const crfRef = useRef();
 
+  // ---------------------------------------------------------
+  // SAVE BUTTON HANDLER
+  // ---------------------------------------------------------
   const handleSave = () => {
     if (crfRef.current) {
       crfRef.current.saveChanges().then(() => {
@@ -25,12 +36,58 @@ export default function App() {
     }
   };
 
-  const handleGenerate = () => {
-    if (!inputPdfFile) return;
+  // ---------------------------------------------------------
+  // GENERATE BUTTON HANDLER
+  // ---------------------------------------------------------
+  const handleGenerate = async () => {
+    if (!filename) {
+      alert("No uploaded filename found!");
+      return;
+    }
 
-    console.log("Generating from:", inputPdfFile.name);
+    console.log("Generating job for:", filename);
 
-    // TODO: Call backend here
+    const res = await fetch("http://localhost:8000/api/job/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename }),
+    });
+
+    const data = await res.json();
+    console.log("Job created:", data);
+
+    setJobId(data.job_id);
+  };
+
+  // ---------------------------------------------------------
+  // POLLING JOB STATUS
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!jobId) return;
+
+    const interval = setInterval(async () => {
+      const res = await fetch(`http://localhost:8000/api/job/status/${jobId}`);
+      const data = await res.json();
+
+      console.log("Job status:", data);
+
+      setJobStatus(data.status);
+      setJobMessage(data.message);
+
+      if (data.status === "completed" || data.status === "error") {
+        clearInterval(interval);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [jobId]);
+
+  // ---------------------------------------------------------
+  // HANDLE PDF UPLOAD RESULT FROM MainLayout
+  // ---------------------------------------------------------
+  const handlePdfUploaded = (result) => {
+    // result = { message, filename, saved_to }
+    setFilename(result.filename);
   };
 
   return (
@@ -42,6 +99,7 @@ export default function App() {
         currentView={view}
         setInputPdfFile={setInputPdfFile}
         inputPdfFile={inputPdfFile}
+        onPdfUploaded={handlePdfUploaded}   // ⭐ NEW
       >
         {/* ⭐ ROUTING */}
         {view === "crfInputViewer" && (
@@ -52,6 +110,15 @@ export default function App() {
 
         {view === "crfSdtmMap" && <CrfViewer ref={crfRef} />}
       </MainLayout>
+
+      {/* ⭐ JOB STATUS DISPLAY */}
+      {jobId && (
+        <div style={{ padding: "10px", background: "#eef", margin: "10px" }}>
+          <p><strong>Job ID:</strong> {jobId}</p>
+          <p><strong>Status:</strong> {jobStatus}</p>
+          <p><strong>Message:</strong> {jobMessage}</p>
+        </div>
+      )}
 
       {/* Toast */}
       <Snackbar
@@ -72,4 +139,3 @@ export default function App() {
     </>
   );
 }
-

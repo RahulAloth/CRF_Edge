@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
+import uuid
 
 app = FastAPI()
 
@@ -23,7 +24,6 @@ app.add_middleware(
 # File paths
 JSON_PATH = "sample.json"
 PDF_PATH = "sample.pdf"
-
 
 # ---------------------------------------------------------
 # 1️⃣ Load CRF JSON
@@ -131,6 +131,7 @@ async def upload_pdf(file: UploadFile = File(...)):
 async def health_check():
     return {"status": "ok"}
 
+
 # ---------------------------------------------------------
 # 7️⃣ Upload Input CRF (PDF only)
 # ---------------------------------------------------------
@@ -139,7 +140,6 @@ os.makedirs(INPUT_CRF_DIR, exist_ok=True)
 
 @app.post("/api/upload/input-crf")
 async def upload_input_crf(file: UploadFile = File(...)):
-    # Validate file type
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
@@ -159,3 +159,61 @@ async def upload_input_crf(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Error saving Input CRF: {e}")
 
 
+# ---------------------------------------------------------
+# Jobs storage
+# ---------------------------------------------------------
+JOBS_DIR = "jobs"
+os.makedirs(JOBS_DIR, exist_ok=True)
+
+
+# ---------------------------------------------------------
+# 8️⃣ Create Job (NO SSH)
+# ---------------------------------------------------------
+@app.post("/api/job/create")
+async def create_job(filename: str = Body(...)):
+    local_path = os.path.join(INPUT_CRF_DIR, filename)
+
+    if not os.path.exists(local_path):
+        raise HTTPException(status_code=404, detail="PDF not found")
+
+    job_id = str(uuid.uuid4())
+    job_file = os.path.join(JOBS_DIR, f"{job_id}.txt")
+
+    # Save initial job status
+    with open(job_file, "w") as f:
+        f.write("status=created\nmessage=pdf_received\n")
+
+    # No SSH, no remote pipeline trigger
+    # Job is simply created locally
+    return {
+        "job_id": job_id,
+        "status": "created",
+        "message": "job_created_local_only"
+    }
+
+
+# ---------------------------------------------------------
+# 9️⃣ Job Status
+# ---------------------------------------------------------
+@app.get("/api/job/status/{job_id}")
+async def job_status(job_id: str):
+    job_file = os.path.join(JOBS_DIR, f"{job_id}.txt")
+
+    if not os.path.exists(job_file):
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    status = "unknown"
+    message = ""
+
+    with open(job_file, "r") as f:
+        for line in f.readlines():
+            if line.startswith("status="):
+                status = line.split("=", 1)[1].strip()
+            if line.startswith("message="):
+                message = line.split("=", 1)[1].strip()
+
+    return {
+        "job_id": job_id,
+        "status": status,
+        "message": message
+    }

@@ -21,6 +21,7 @@ export default function MainLayout({
   currentView,
   setInputPdfFile,
   inputPdfFile,
+  onPdfUploaded,   // ⭐ NEW
 }) {
   // ⭐ Handle file selection + backend upload
   const handleInputCRFUpload = async (event) => {
@@ -34,6 +35,10 @@ export default function MainLayout({
     try {
       const result = await uploadInputCRF(file);
       console.log("Uploaded to backend:", result);
+
+      // ⭐ Send filename to App.jsx
+      onPdfUploaded(result);
+
       alert("Input CRF uploaded successfully!");
     } catch (err) {
       console.error(err);
@@ -201,4 +206,3 @@ export default function MainLayout({
     </div>
   );
 }
-

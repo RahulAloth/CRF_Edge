@@ -4,20 +4,19 @@ import MainLayout from "./layouts/MainLayout";
 import PDFInputViewer from "./components/PDFInputViewer";
 import PdfViewer from "./components/PdfViewer";
 import CrfViewer from "./components/CrfViewer";
+import JobStatusPanel from "./components/JobStatusPanel";
 
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
+import { createJob, getJobStatus } from "./api/backend";
+
 export default function App() {
   const [view, setView] = useState("crfInputViewer");
 
-  // ⭐ Stores uploaded CRF PDF (actual File object)
   const [inputPdfFile, setInputPdfFile] = useState(null);
-
-  // ⭐ Stores filename returned by backend
   const [filename, setFilename] = useState("");
 
-  // ⭐ Job tracking
   const [jobId, setJobId] = useState(null);
   const [jobStatus, setJobStatus] = useState("");
   const [jobMessage, setJobMessage] = useState("");
@@ -47,35 +46,53 @@ export default function App() {
 
     console.log("Generating job for:", filename);
 
-    const res = await fetch("http://localhost:8000/api/job/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename }),
-    });
-
-    const data = await res.json();
-    console.log("Job created:", data);
-
-    setJobId(data.job_id);
+    try {
+      const data = await createJob(filename);
+      console.log("Job created:", data);
+      setJobId(data.job_id);
+    } catch (err) {
+      console.error("Job creation failed:", err);
+      alert("Job creation failed");
+    }
   };
 
   // ---------------------------------------------------------
-  // POLLING JOB STATUS
+  // POLLING JOB STATUS WITH TIMEOUT
   // ---------------------------------------------------------
   useEffect(() => {
     if (!jobId) return;
 
+    let pollCount = 0;
+    const MAX_POLLS = 10; // ~200 seconds at 2s interval
+
     const interval = setInterval(async () => {
-      const res = await fetch(`http://localhost:8000/api/job/status/${jobId}`);
-      const data = await res.json();
+      try {
+        pollCount++;
 
-      console.log("Job status:", data);
+        // Timeout protection
+        if (pollCount > MAX_POLLS) {
+          console.error("Polling timeout reached. Setting job to error.");
 
-      setJobStatus(data.status);
-      setJobMessage(data.message);
+          setJobStatus("error");
+          setJobMessage("Timeout: No response from Edge daemon");
+          clearInterval(interval);
+          return;
+        }
 
-      if (data.status === "completed" || data.status === "error") {
+        const data = await getJobStatus(jobId);
+        console.log("Job status:", data);
+
+        setJobStatus(data.status);
+        setJobMessage(data.message);
+
+        if (data.status === "completed" || data.status === "error") {
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error("Status polling failed:", err);
         clearInterval(interval);
+        setJobStatus("error");
+        setJobMessage("Polling failed: backend unreachable");
       }
     }, 2000);
 
@@ -86,7 +103,13 @@ export default function App() {
   // HANDLE PDF UPLOAD RESULT FROM MainLayout
   // ---------------------------------------------------------
   const handlePdfUploaded = (result) => {
-    // result = { message, filename, saved_to }
+    console.log("PDF upload result:", result);
+    if (!result.filename) {
+      alert("Backend did not return filename!");
+      console.log("Upload result:", result);
+      return;
+    }
+
     setFilename(result.filename);
   };
 
@@ -99,26 +122,19 @@ export default function App() {
         currentView={view}
         setInputPdfFile={setInputPdfFile}
         inputPdfFile={inputPdfFile}
-        onPdfUploaded={handlePdfUploaded}   // ⭐ NEW
+        onPdfUploaded={handlePdfUploaded}
       >
-        {/* ⭐ ROUTING */}
-        {view === "crfInputViewer" && (
-          <PDFInputViewer file={inputPdfFile} />
-        )}
-
+        {view === "crfInputViewer" && <PDFInputViewer file={inputPdfFile} />}
         {view === "crfOutputViewer" && <PdfViewer />}
-
         {view === "crfSdtmMap" && <CrfViewer ref={crfRef} />}
       </MainLayout>
 
-      {/* ⭐ JOB STATUS DISPLAY */}
-      {jobId && (
-        <div style={{ padding: "10px", background: "#eef", margin: "10px" }}>
-          <p><strong>Job ID:</strong> {jobId}</p>
-          <p><strong>Status:</strong> {jobStatus}</p>
-          <p><strong>Message:</strong> {jobMessage}</p>
-        </div>
-      )}
+      {/* ⭐ Professional Job Status Panel */}
+      <JobStatusPanel
+        jobId={jobId}
+        jobStatus={jobStatus}
+        jobMessage={jobMessage}
+      />
 
       {/* Toast */}
       <Snackbar

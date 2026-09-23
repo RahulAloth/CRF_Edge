@@ -1,3 +1,5 @@
+// src/layouts/MainLayout.jsx
+
 import React from "react";
 import {
   Drawer,
@@ -9,7 +11,7 @@ import {
   Divider,
 } from "@mui/material";
 
-import { uploadInputCRF } from "../api/backend";   // ⭐ API call
+import { uploadInputCRF } from "../api/backend";
 
 const drawerWidth = 360;
 
@@ -21,22 +23,18 @@ export default function MainLayout({
   currentView,
   setInputPdfFile,
   inputPdfFile,
-  onPdfUploaded,   // ⭐ NEW
+  onPdfUploaded,
 }) {
-  // ⭐ Handle file selection + backend upload
   const handleInputCRFUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // 1️⃣ Save file in React state (enables Generate button)
     setInputPdfFile(file);
 
-    // 2️⃣ Upload to backend
     try {
       const result = await uploadInputCRF(file);
       console.log("Uploaded to backend:", result);
 
-      // ⭐ Send filename to App.jsx
       onPdfUploaded(result);
 
       alert("Input CRF uploaded successfully!");
@@ -48,8 +46,6 @@ export default function MainLayout({
 
   return (
     <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
-      
-      {/* Sidebar */}
       <Drawer
         variant="permanent"
         sx={{
@@ -67,14 +63,12 @@ export default function MainLayout({
           },
         }}
       >
-        {/* Title */}
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
           CRF Edge
           <br />
           HITL
         </Typography>
 
-        {/* ⭐ Load CRF Input */}
         <div
           onClick={() => document.getElementById("pdfInputFile").click()}
           style={{
@@ -94,7 +88,6 @@ export default function MainLayout({
           Load CRF Input
         </div>
 
-        {/* ⭐ Hidden file input */}
         <input
           id="pdfInputFile"
           type="file"
@@ -105,44 +98,24 @@ export default function MainLayout({
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
 
-        {/* Navigation */}
         <List sx={{ flexGrow: 1 }}>
-
-          {/* CRF INPUT VIEWER */}
           <ListItemButton
             selected={currentView === "crfInputViewer"}
             onClick={() => onSelectView("crfInputViewer")}
-            sx={{
-              borderRadius: "6px",
-              "&.Mui-selected": { backgroundColor: "rgba(255,255,255,0.2)" },
-              "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
-            }}
           >
             <ListItemText primary="CRF Input Viewer" />
           </ListItemButton>
 
-          {/* CRF OUTPUT VIEWER */}
           <ListItemButton
             selected={currentView === "crfOutputViewer"}
             onClick={() => onSelectView("crfOutputViewer")}
-            sx={{
-              borderRadius: "6px",
-              "&.Mui-selected": { backgroundColor: "rgba(255,255,255,0.2)" },
-              "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
-            }}
           >
             <ListItemText primary="CRF Output Viewer" />
           </ListItemButton>
 
-          {/* CRF‑SDTM MAP */}
           <ListItemButton
             selected={currentView === "crfSdtmMap"}
             onClick={() => onSelectView("crfSdtmMap")}
-            sx={{
-              borderRadius: "6px",
-              "&.Mui-selected": { backgroundColor: "rgba(255,255,255,0.2)" },
-              "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
-            }}
           >
             <ListItemText primary="CRF‑SDTM Map" />
           </ListItemButton>
@@ -150,7 +123,6 @@ export default function MainLayout({
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
 
-        {/* ⭐ GENERATE BUTTON */}
         <Button
           variant="contained"
           onClick={onGenerate}
@@ -159,18 +131,11 @@ export default function MainLayout({
             backgroundColor: "white",
             color: "#0A3D91",
             fontWeight: 600,
-            mb: 1,
-            "&:hover": { backgroundColor: "#e6e6e6" },
-            "&:disabled": {
-              backgroundColor: "rgba(255,255,255,0.5)",
-              color: "#0A3D91",
-            },
           }}
         >
           Generate
         </Button>
 
-        {/* Save Button */}
         <Button
           variant="contained"
           onClick={onSave}
@@ -179,18 +144,12 @@ export default function MainLayout({
             backgroundColor: "white",
             color: "#0A3D91",
             fontWeight: 600,
-            "&:hover": { backgroundColor: "#e6e6e6" },
-            "&:disabled": {
-              backgroundColor: "rgba(255,255,255,0.5)",
-              color: "#0A3D91",
-            },
           }}
         >
           Save Changes
         </Button>
       </Drawer>
 
-      {/* Main Content */}
       <div
         style={{
           flexGrow: 1,

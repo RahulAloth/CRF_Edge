@@ -1,33 +1,52 @@
-const API_BASE = "http://127.0.0.1:8000/api";
+// src/api/backend.js
 
-export async function fetchCRF() {
-  const response = await fetch(`${API_BASE}/crf`);
-  return response.json();
-}
+const BASE_URL = "http://localhost:8000";
 
-export async function saveCRF(rowsWithoutId) {
-  const response = await fetch(`${API_BASE}/crf/save`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(rowsWithoutId), // ⭐ plain list
-  });
-
-  return response.json();
-}
-
+// ---------------------------------------------------------
+// Upload Input CRF PDF
+// ---------------------------------------------------------
 export async function uploadInputCRF(file) {
-  const formData = new FormData();
-  formData.append("file", file);
+  const fd = new FormData();
+  fd.append("file", file);
 
-  const response = await fetch(`${API_BASE}/upload/input-crf`, {
+  const res = await fetch(`${BASE_URL}/api/upload/input-crf`, {
     method: "POST",
-    body: formData,
+    body: fd,
   });
 
-  if (!response.ok) {
+  if (!res.ok) {
     throw new Error("Failed to upload Input CRF");
   }
 
-  return response.json();
+  return await res.json(); // { message, filename, saved_to }
 }
 
+// ---------------------------------------------------------
+// Create Job
+// ---------------------------------------------------------
+export async function createJob(filename) {
+  const res = await fetch(`${BASE_URL}/api/job/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to create job");
+  }
+
+  return await res.json(); // { job_id, status, message }
+}
+
+// ---------------------------------------------------------
+// Poll Job Status
+// ---------------------------------------------------------
+export async function getJobStatus(jobId) {
+  const res = await fetch(`${BASE_URL}/api/job/status/${jobId}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to get job status");
+  }
+
+  return await res.json(); // { job_id, status, message }
+}

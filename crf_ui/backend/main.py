@@ -1,219 +1,149 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Body
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import json
 import os
 import uuid
 
+import crf_connect
+crf_connect.init_connection()
+
 app = FastAPI()
 
-# ---------------------------------------------------------
-# CORS (Frontend Access)
-# ---------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# File paths
 JSON_PATH = "sample.json"
 PDF_PATH = "sample.pdf"
 
-# ---------------------------------------------------------
-# 1️⃣ Load CRF JSON
-# ---------------------------------------------------------
 @app.get("/api/crf")
 async def get_crf_data():
     if not os.path.exists(JSON_PATH):
         return []
+    with open(JSON_PATH, "r") as f:
+        return JSONResponse(content=json.load(f))
 
-    try:
-        with open(JSON_PATH, "r") as f:
-            data = json.load(f)
-        return JSONResponse(content=data)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Invalid JSON format")
-
-
-# ---------------------------------------------------------
-# 2️⃣ Save CRF JSON (merge edited rows)
-# ---------------------------------------------------------
 @app.post("/api/crf/save")
 async def save_crf_data(data: list = Body(...)):
-    print("\n🔥 SAVE ENDPOINT HIT 🔥")
-    print("\n--- Incoming Edited Rows ---")
-    print(json.dumps(data, indent=4))
+    if os.path.exists(JSON_PATH):
+        with open(JSON_PATH, "r") as f:
+            full_data = json.load(f)
+    else:
+        full_data = []
 
-    try:
-        # Load existing JSON
-        if os.path.exists(JSON_PATH):
-            with open(JSON_PATH, "r") as f:
-                full_data = json.load(f)
-        else:
-            full_data = []
+    merged = []
+    for row in full_data:
+        match = next((e for e in data if e["page"] == row["page"] and e["raw_text"] == row["raw_text"]), None)
+        merged.append(match if match else row)
 
-        print("\n--- Existing Full JSON ---")
-        print(json.dumps(full_data, indent=4))
+    with open(JSON_PATH, "w") as f:
+        json.dump(merged, f, indent=4)
 
-        # ⭐ Correct merge logic: match by page + raw_text
-        merged = []
-        for row in full_data:
-            match = next(
-                (e for e in data if e["page"] == row["page"] and e["raw_text"] == row["raw_text"]),
-                None
-            )
-            merged.append(match if match else row)
+    return {"message": "Data saved successfully", "saved": len(data)}
 
-        print("\n--- Merged JSON (Final Saved Version) ---")
-        print(json.dumps(merged, indent=4))
-
-        # Save merged file
-        with open(JSON_PATH, "w") as f:
-            json.dump(merged, f, indent=4)
-
-        return {"message": "Data saved successfully", "saved": len(data)}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving data: {e}")
-
-
-# ---------------------------------------------------------
-# 3️⃣ Serve PDF file
-# ---------------------------------------------------------
 @app.get("/api/pdf")
 async def get_pdf_file():
     if not os.path.exists(PDF_PATH):
         raise HTTPException(status_code=404, detail="PDF not found")
     return FileResponse(path=PDF_PATH, media_type="application/pdf")
 
-
-# ---------------------------------------------------------
-# 4️⃣ Upload a NEW JSON file
-# ---------------------------------------------------------
 @app.post("/api/upload-json")
 async def upload_json(file: UploadFile = File(...)):
-    try:
-        content = await file.read()
-        data = json.loads(content)
+    content = await file.read()
+    data = json.loads(content)
+    with open(JSON_PATH, "w") as f:
+        json.dump(data, f, indent=4)
+    return {"message": "JSON uploaded successfully"}
 
-        with open(JSON_PATH, "w") as f:
-            json.dump(data, f, indent=4)
-
-        return {"message": "JSON uploaded successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON file: {e}")
-
-
-# ---------------------------------------------------------
-# 5️⃣ Upload a NEW PDF file
-# ---------------------------------------------------------
 @app.post("/api/upload-pdf")
 async def upload_pdf(file: UploadFile = File(...)):
-    try:
-        with open(PDF_PATH, "wb") as f:
-            f.write(await file.read())
+    with open(PDF_PATH, "wb") as f:
+        f.write(await file.read())
+    return {"message": "PDF uploaded successfully"}
 
-        return {"message": "PDF uploaded successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error saving PDF: {e}")
-
-
-# ---------------------------------------------------------
-# 6️⃣ Health Check
-# ---------------------------------------------------------
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok"}
 
-
-# ---------------------------------------------------------
-# 7️⃣ Upload Input CRF (PDF only)
-# ---------------------------------------------------------
 INPUT_CRF_DIR = "input_crf"
 os.makedirs(INPUT_CRF_DIR, exist_ok=True)
 
 @app.post("/api/upload/input-crf")
 async def upload_input_crf(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-
     save_path = os.path.join(INPUT_CRF_DIR, file.filename)
+    with open(save_path, "wb") as buffer:
+        buffer.write(await file.read())
+    return {
+        "message": "Input CRF PDF uploaded successfully",
+        "filename": file.filename,
+        "saved_to": save_path,
+    }
 
-    try:
-        with open(save_path, "wb") as buffer:
-            buffer.write(await file.read())
+QUEUE_DIR = "input_crf/crf_daemon/queue"
+STATUS_DIR = "input_crf/crf_daemon/status"
+COMPLETED_DIR = "input_crf/crf_daemon/completed"
 
-        return {
-            "message": "Input CRF PDF uploaded successfully",
-            "filename": file.filename,
-            "saved_to": save_path
-        }
+os.makedirs(QUEUE_DIR, exist_ok=True)
+os.makedirs(STATUS_DIR, exist_ok=True)
+os.makedirs(COMPLETED_DIR, exist_ok=True)
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving Input CRF: {e}")
+def write_status(job_id: str, msg: str):
+    with open(f"{STATUS_DIR}/{job_id}.status", "w") as f:
+        f.write(msg)
 
+# ⭐ FIXED ENDPOINT
+class JobRequest(BaseModel):
+    filename: str
 
-# ---------------------------------------------------------
-# Jobs storage
-# ---------------------------------------------------------
-JOBS_DIR = "jobs"
-os.makedirs(JOBS_DIR, exist_ok=True)
-
-
-# ---------------------------------------------------------
-# 8️⃣ Create Job (NO SSH)
-# ---------------------------------------------------------
 @app.post("/api/job/create")
-async def create_job(filename: str = Body(...)):
-    local_path = os.path.join(INPUT_CRF_DIR, filename)
+async def create_job(req: JobRequest):
+    filename = req.filename
 
+    local_path = os.path.join(INPUT_CRF_DIR, filename)
     if not os.path.exists(local_path):
         raise HTTPException(status_code=404, detail="PDF not found")
 
     job_id = str(uuid.uuid4())
-    job_file = os.path.join(JOBS_DIR, f"{job_id}.txt")
 
-    # Save initial job status
+    job_file = f"{QUEUE_DIR}/{job_id}.json"
     with open(job_file, "w") as f:
-        f.write("status=created\nmessage=pdf_received\n")
+        json.dump({"job_id": job_id, "filename": filename}, f)
 
-    # No SSH, no remote pipeline trigger
-    # Job is simply created locally
+    write_status(job_id, "created")
+
+    crf_connect.send_job_file(job_file, job_id)
+
     return {
         "job_id": job_id,
         "status": "created",
-        "message": "job_created_local_only"
+        "message": "job_sent_to_edge",
     }
 
-
-# ---------------------------------------------------------
-# 9️⃣ Job Status
-# ---------------------------------------------------------
 @app.get("/api/job/status/{job_id}")
 async def job_status(job_id: str):
-    job_file = os.path.join(JOBS_DIR, f"{job_id}.txt")
+    status_file = f"{STATUS_DIR}/{job_id}.status"
+    queue_file = f"{QUEUE_DIR}/{job_id}.json"
+    completed_file = f"{COMPLETED_DIR}/{job_id}.json"
 
-    if not os.path.exists(job_file):
-        raise HTTPException(status_code=404, detail="Job not found")
+    if os.path.exists(completed_file):
+        msg = "completed"
+        if os.path.exists(status_file):
+            with open(status_file, "r") as f:
+                msg = f.read().strip()
+        return {"job_id": job_id, "status": "completed", "message": msg}
 
-    status = "unknown"
-    message = ""
+    if os.path.exists(queue_file):
+        if os.path.exists(status_file):
+            with open(status_file, "r") as f:
+                msg = f.read().strip()
+            status = "processing" if msg != "created" else "created"
+            return {"job_id": job_id, "status": status, "message": msg}
+        return {"job_id": job_id, "status": "queued", "message": "Job is waiting in queue"}
 
-    with open(job_file, "r") as f:
-        for line in f.readlines():
-            if line.startswith("status="):
-                status = line.split("=", 1)[1].strip()
-            if line.startswith("message="):
-                message = line.split("=", 1)[1].strip()
-
-    return {
-        "job_id": job_id,
-        "status": status,
-        "message": message
-    }
+    raise HTTPException(status_code=404, detail="Job not found")

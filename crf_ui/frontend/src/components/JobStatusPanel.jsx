@@ -5,9 +5,8 @@ export default function JobStatusPanel({ jobId, jobStatus, jobMessage }) {
   if (!jobId) return null;
 
   const isProcessing =
-    jobStatus === "processing" ||
-    jobStatus === "queued" ||
-    jobStatus === "created";
+    jobStatus === "created" ||
+    jobStatus === "processing";
 
   const isCompleted = jobStatus === "completed";
   const isError = jobStatus === "error";
@@ -16,7 +15,7 @@ export default function JobStatusPanel({ jobId, jobStatus, jobMessage }) {
     ? "#2e7d32" // green
     : isError
     ? "#d32f2f" // red
-    : "#0A3D91"; // blue
+    : "#0A3D91"; // blue (default for created/processing)
 
   return (
     <Card

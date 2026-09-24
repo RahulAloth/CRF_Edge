@@ -2,21 +2,20 @@
 import os
 import json
 import paramiko
-from scp import SCPClient
 
 # ---------------------------------------------------------
 # Configuration (MATCHES EDGE DAEMON PATHS)
 # ---------------------------------------------------------
 CONFIG = {
-    "host": "ubuntu",
-    "username": "nyra",
-    "ssh_key": "/home/rahul/.ssh/id_ed25519",
+    "host": "ubuntu",                     # Edge PC hostname
+    "username": "nyra",                   # Edge PC user
+    "ssh_key": "/home/rahul/.ssh/id_ed25519",   # Host → Edge private key
 
-    "remote_queue_dir": "/home/nyra/crfedge/queue",
+    "remote_pdf_dir": "/home/nyra/crfedge/incoming_pdfs",
+    "remote_job_dir": "/home/nyra/crfedge/jobs",
     "remote_status_dir": "/home/nyra/crfedge/status",
     "remote_completed_dir": "/home/nyra/crfedge/completed",
 }
-
 
 # ---------------------------------------------------------
 # SSH Connection
@@ -41,56 +40,64 @@ def ssh_connect():
     return ssh
 
 # ---------------------------------------------------------
-# Generic SSH Exec
+# Generic SFTP Send
 # ---------------------------------------------------------
-def ssh_exec(cmd: str) -> str:
+def sftp_send(local_path: str, remote_path: str):
     ssh = ssh_connect()
-    try:
-        stdin, stdout, stderr = ssh.exec_command(cmd)
-        out = stdout.read().decode().strip()
-        err = stderr.read().decode().strip()
-        if err:
-            print(f"[SSH STDERR] {err}")
-        return out
-    finally:
-        ssh.close()
+    sftp = ssh.open_sftp()
 
-# ---------------------------------------------------------
-# Generic SCP Send
-# ---------------------------------------------------------
-def scp_send(local_path: str, remote_path: str):
-    ssh = ssh_connect()
+    remote_dir = remote_path.rsplit("/", 1)[0]
     try:
-        remote_dir = remote_path.rsplit("/", 1)[0]
         ssh.exec_command(f"mkdir -p {remote_dir}")
+    except:
+        pass
 
-        with SCPClient(ssh.get_transport()) as scp:
-            scp.put(local_path, remote_path)
-    finally:
-        ssh.close()
+    sftp.put(local_path, remote_path)
+    sftp.close()
+    ssh.close()
 
 # ---------------------------------------------------------
-# Generic SCP Receive
+# Generic SFTP Receive
 # ---------------------------------------------------------
-def scp_receive(remote_path: str, local_path: str):
+def sftp_receive(remote_path: str, local_path: str):
     ssh = ssh_connect()
-    try:
-        local_dir = local_path.rsplit("/", 1)[0]
-        os.makedirs(local_dir, exist_ok=True)
+    sftp = ssh.open_sftp()
 
-        with SCPClient(ssh.get_transport()) as scp:
-            scp.get(remote_path, local_path)
-    finally:
-        ssh.close()
+    local_dir = local_path.rsplit("/", 1)[0]
+    os.makedirs(local_dir, exist_ok=True)
+
+    sftp.get(remote_path, local_path)
+    sftp.close()
+    ssh.close()
 
 # ---------------------------------------------------------
-# Send Job JSON to EDGE
+# Send PDF File to EDGE
 # ---------------------------------------------------------
-def send_job_file(local_job_file: str, job_id: str):
-    remote_path = f"{CONFIG['remote_queue_dir']}/{job_id}.json"
-    print(f"[INFO] Sending job file → {remote_path}")
-    scp_send(local_job_file, remote_path)
-    print("[INFO] Job file sent successfully")
+def send_pdf_file(local_pdf_file: str, job_id: str):
+    remote_path = f"{CONFIG['remote_pdf_dir']}/{job_id}.pdf"
+    print(f"[INFO] Sending PDF → {remote_path}")
+    sftp_send(local_pdf_file, remote_path)
+    print("[INFO] PDF sent successfully")
+
+# ---------------------------------------------------------
+# Send Job Metadata to EDGE
+# ---------------------------------------------------------
+def send_job_metadata(job_id: str, filename: str):
+    metadata = {
+        "job_id": job_id,
+        "filename": filename
+    }
+
+    local_tmp = f"/tmp/{job_id}.json"
+    with open(local_tmp, "w") as f:
+        json.dump(metadata, f)
+
+    remote_path = f"{CONFIG['remote_job_dir']}/{job_id}.json"
+    print(f"[INFO] Sending job metadata → {remote_path}")
+    sftp_send(local_tmp, remote_path)
+    print("[INFO] Job metadata sent successfully")
+
+    os.remove(local_tmp)
 
 # ---------------------------------------------------------
 # Pull Completed Results from EDGE
@@ -105,10 +112,10 @@ def pull_completed(job_id: str, local_completed_dir: str):
     local_pdf = os.path.join(local_completed_dir, f"{job_id}.pdf")
 
     print(f"[INFO] Pulling completed JSON → {remote_json}")
-    scp_receive(remote_json, local_json)
+    sftp_receive(remote_json, local_json)
 
     print(f"[INFO] Pulling completed PDF → {remote_pdf}")
-    scp_receive(remote_pdf, local_pdf)
+    sftp_receive(remote_pdf, local_pdf)
 
     print("[INFO] Completed results pulled successfully")
 

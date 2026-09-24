@@ -1,5 +1,3 @@
-// src/layouts/MainLayout.jsx
-
 import React from "react";
 import {
   Drawer,
@@ -18,7 +16,6 @@ const drawerWidth = 360;
 export default function MainLayout({
   children,
   onSelectView,
-  onSave,
   onGenerate,
   currentView,
   setInputPdfFile,
@@ -33,10 +30,7 @@ export default function MainLayout({
 
     try {
       const result = await uploadInputCRF(file);
-      console.log("Uploaded to backend:", result);
-
       onPdfUploaded(result);
-
       alert("Input CRF uploaded successfully!");
     } catch (err) {
       console.error(err);
@@ -69,6 +63,7 @@ export default function MainLayout({
           HITL
         </Typography>
 
+        {/* Upload Button */}
         <div
           onClick={() => document.getElementById("pdfInputFile").click()}
           style={{
@@ -98,35 +93,37 @@ export default function MainLayout({
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
 
+        {/* Navigation */}
         <List sx={{ flexGrow: 1 }}>
           <ListItemButton
-            selected={currentView === "crfInputViewer"}
-            onClick={() => onSelectView("crfInputViewer")}
+            selected={currentView === "input"}
+            onClick={() => onSelectView("input")}
           >
             <ListItemText primary="CRF Input Viewer" />
           </ListItemButton>
 
           <ListItemButton
-            selected={currentView === "crfOutputViewer"}
-            onClick={() => onSelectView("crfOutputViewer")}
+            selected={currentView === "outputPdf"}
+            onClick={() => onSelectView("outputPdf")}
           >
-            <ListItemText primary="CRF Output Viewer" />
+            <ListItemText primary="Processed PDF" />
           </ListItemButton>
 
           <ListItemButton
-            selected={currentView === "crfSdtmMap"}
-            onClick={() => onSelectView("crfSdtmMap")}
+            selected={currentView === "outputJson"}
+            onClick={() => onSelectView("outputJson")}
           >
-            <ListItemText primary="CRF‑SDTM Map" />
+            <ListItemText primary="Processed JSON" />
           </ListItemButton>
         </List>
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
 
+        {/* Generate Button */}
         <Button
           variant="contained"
           onClick={onGenerate}
-          disabled={currentView !== "crfInputViewer" || !inputPdfFile}
+          disabled={currentView !== "input" || !inputPdfFile}
           sx={{
             backgroundColor: "white",
             color: "#0A3D91",
@@ -135,21 +132,9 @@ export default function MainLayout({
         >
           Generate
         </Button>
-
-        <Button
-          variant="contained"
-          onClick={onSave}
-          disabled={currentView !== "crfSdtmMap"}
-          sx={{
-            backgroundColor: "white",
-            color: "#0A3D91",
-            fontWeight: 600,
-          }}
-        >
-          Save Changes
-        </Button>
       </Drawer>
 
+      {/* Main Content */}
       <div
         style={{
           flexGrow: 1,

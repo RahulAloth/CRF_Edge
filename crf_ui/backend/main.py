@@ -6,7 +6,12 @@ import os
 import uuid
 
 import crf_connect
-crf_connect.init_connection()
+
+# Initialize and test connection to Edge HTTP API on startup
+try:
+    crf_connect.init_connection()
+except Exception as e:
+    print(f"[WARNING] Could not connect to Edge API on startup: {e}")
 
 app = FastAPI()
 
@@ -29,6 +34,7 @@ os.makedirs(INPUT_CRF_DIR, exist_ok=True)
 os.makedirs(STATUS_DIR, exist_ok=True)
 os.makedirs(COMPLETED_DIR, exist_ok=True)
 
+
 # ---------------------------------------------------------
 # UPLOAD INPUT CRF PDF
 # ---------------------------------------------------------
@@ -45,12 +51,16 @@ async def upload_input_crf(file: UploadFile = File(...)):
         "saved_to": save_path,
     }
 
+
 # ---------------------------------------------------------
-# CREATE JOB  (NO QUEUE FILE)
+# CREATE JOB
 # ---------------------------------------------------------
 @app.post("/api/job/create")
 async def create_job(data: dict = Body(...)):
-    filename = data["filename"]
+    filename = data.get("filename")
+    if not filename:
+        raise HTTPException(status_code=400, detail="Filename missing in request body")
+
     local_pdf_path = os.path.join(INPUT_CRF_DIR, filename)
 
     if not os.path.exists(local_pdf_path):
@@ -63,9 +73,18 @@ async def create_job(data: dict = Body(...)):
     with open(status_path, "w") as f:
         f.write("created")
 
-    # Send PDF + metadata to Edge
-    crf_connect.send_pdf_file(local_pdf_path, job_id)
-    crf_connect.send_job_metadata(job_id, filename)
+    # Send PDF + Metadata to Edge via single HTTP request
+    try:
+        crf_connect.submit_job(
+            local_pdf_path=local_pdf_path,
+            job_id=job_id,
+            extra_metadata={"filename": filename}
+        )
+    except Exception as e:
+        # Update local status to error if submission fails
+        with open(status_path, "w") as f:
+            f.write("error")
+        raise HTTPException(status_code=500, detail=f"Failed to submit job to Edge: {str(e)}")
 
     return {
         "job_id": job_id,
@@ -73,16 +92,9 @@ async def create_job(data: dict = Body(...)):
         "message": "job_sent_to_edge",
     }
 
-# ---------------------------------------------------------
-# JOB STATUS (ONLY STATUS FILE)
-# Edge Daemon will update the status file in STATUS_DIR when it receives the job and when it completes processing.
-# The status file will contain one of the following statuses: "created", "processing", "completed", "error"
-# Example of status file content:
-# write_status(job_id, "created")
-# write_status(job_id, "processing")
-# write_status(job_id, "completed")
-# write_status(job_id, "error")
 
+# ---------------------------------------------------------
+# JOB STATUS
 # ---------------------------------------------------------
 @app.get("/api/job/status/{job_id}")
 async def job_status(job_id: str):
@@ -100,6 +112,7 @@ async def job_status(job_id: str):
         "message": status,
     }
 
+
 # ---------------------------------------------------------
 # GET COMPLETED OUTPUT JSON
 # ---------------------------------------------------------
@@ -107,11 +120,19 @@ async def job_status(job_id: str):
 async def job_output(job_id: str):
     completed_file = os.path.join(COMPLETED_DIR, f"{job_id}.json")
 
+    # If completed file is not local yet, pull it over HTTP from Edge
     if not os.path.exists(completed_file):
-        raise HTTPException(status_code=404, detail="Completed output not found")
+        try:
+            crf_connect.pull_completed(job_id, COMPLETED_DIR)
+        except Exception as e:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Completed output not available or download failed: {str(e)}"
+            )
 
     with open(completed_file, "r") as f:
         return JSONResponse(content=json.load(f))
+
 
 # ---------------------------------------------------------
 # HEALTH CHECK

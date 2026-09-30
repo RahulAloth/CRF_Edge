@@ -1,132 +1,110 @@
 #!/usr/bin/env python3
 import os
 import json
-import paramiko
+import requests
 
 # ---------------------------------------------------------
-# Configuration (MATCHES EDGE DAEMON PATHS)
+# Configuration
 # ---------------------------------------------------------
 CONFIG = {
-    "host": "ubuntu",                     # Edge PC hostname
-    "username": "nyra",                   # Edge PC user
-    "ssh_key": "/home/rahul/.ssh/id_ed25519",   # Host → Edge private key
-
-    "remote_pdf_dir": "/home/nyra/crfedge/incoming_pdfs",
-    "remote_job_dir": "/home/nyra/crfedge/jobs",
-    "remote_status_dir": "/home/nyra/crfedge/status",
-    "remote_completed_dir": "/home/nyra/crfedge/completed",
+    "edge_ip": "192.168.178.112",
+    "port": 8000,
+    "timeout": 10,  # seconds
 }
 
-# ---------------------------------------------------------
-# SSH Connection
-# ---------------------------------------------------------
-def ssh_connect():
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+BASE_URL = f"http://{CONFIG['edge_ip']}:{CONFIG['port']}"
 
+
+# ---------------------------------------------------------
+# Connection Test / Health Check
+# ---------------------------------------------------------
+def init_connection():
+    """Verifies that the HTTP server on EDGE is reachable."""
     try:
-        pkey = paramiko.Ed25519Key.from_private_key_file(CONFIG["ssh_key"])
-    except Exception:
-        pkey = paramiko.RSAKey.from_private_key_file(CONFIG["ssh_key"])
+        response = requests.get(f"{BASE_URL}/docs", timeout=CONFIG["timeout"])
+        response.raise_for_status()
+        print("[OK] HTTP API ready")
+    except Exception as e:
+        raise RuntimeError(f"Failed to connect to Edge API at {BASE_URL}: {e}")
 
-    ssh.connect(
-        hostname=CONFIG["host"],
-        username=CONFIG["username"],
-        pkey=pkey,
-        look_for_keys=False,
-        allow_agent=False,
-        timeout=10,
-    )
-    return ssh
 
 # ---------------------------------------------------------
-# Generic SFTP Send
+# Submit Job (Replaces send_pdf_file + send_job_metadata)
 # ---------------------------------------------------------
-def sftp_send(local_path: str, remote_path: str):
-    ssh = ssh_connect()
-    sftp = ssh.open_sftp()
+def submit_job(local_pdf_path: str, job_id: str, extra_metadata: dict = None):
+    """Sends both the PDF file and metadata in a single HTTP POST request."""
+    if not os.path.exists(local_pdf_path):
+        raise FileNotFoundError(f"Local PDF file not found: {local_pdf_path}")
 
-    remote_dir = remote_path.rsplit("/", 1)[0]
-    try:
-        ssh.exec_command(f"mkdir -p {remote_dir}")
-    except:
-        pass
-
-    sftp.put(local_path, remote_path)
-    sftp.close()
-    ssh.close()
-
-# ---------------------------------------------------------
-# Generic SFTP Receive
-# ---------------------------------------------------------
-def sftp_receive(remote_path: str, local_path: str):
-    ssh = ssh_connect()
-    sftp = ssh.open_sftp()
-
-    local_dir = local_path.rsplit("/", 1)[0]
-    os.makedirs(local_dir, exist_ok=True)
-
-    sftp.get(remote_path, local_path)
-    sftp.close()
-    ssh.close()
-
-# ---------------------------------------------------------
-# Send PDF File to EDGE
-# ---------------------------------------------------------
-def send_pdf_file(local_pdf_file: str, job_id: str):
-    remote_path = f"{CONFIG['remote_pdf_dir']}/{job_id}.pdf"
-    print(f"[INFO] Sending PDF → {remote_path}")
-    sftp_send(local_pdf_file, remote_path)
-    print("[INFO] PDF sent successfully")
-
-# ---------------------------------------------------------
-# Send Job Metadata to EDGE
-# ---------------------------------------------------------
-def send_job_metadata(job_id: str, filename: str):
     metadata = {
         "job_id": job_id,
-        "filename": filename
+        "status": "new"
     }
+    if extra_metadata:
+        metadata.update(extra_metadata)
 
-    local_tmp = f"/tmp/{job_id}.json"
-    with open(local_tmp, "w") as f:
-        json.dump(metadata, f)
+    filename = os.path.basename(local_pdf_path)
 
-    remote_path = f"{CONFIG['remote_job_dir']}/{job_id}.json"
-    print(f"[INFO] Sending job metadata → {remote_path}")
-    sftp_send(local_tmp, remote_path)
-    print("[INFO] Job metadata sent successfully")
+    with open(local_pdf_path, "rb") as pdf_file:
+        files = {
+            "file": (filename, pdf_file, "application/pdf")
+        }
+        data = {
+            "job_id": job_id,
+            "metadata": json.dumps(metadata)
+        }
 
-    os.remove(local_tmp)
+        print(f"[INFO] Submitting job '{job_id}' with file '{filename}' → {BASE_URL}/submit_job")
+        
+        response = requests.post(
+            f"{BASE_URL}/submit_job",
+            files=files,
+            data=data,
+            timeout=30
+        )
+
+    response.raise_for_status()
+    print(f"[INFO] Job '{job_id}' submitted successfully (Status: {response.status_code})")
+    return response.json() if response.headers.get("content-type") == "application/json" else response.text
+
+
+# ---------------------------------------------------------
+# Backwards-Compatibility Wrappers (If existing code calls these)
+# ---------------------------------------------------------
+def send_pdf_file(local_pdf_file: str, job_id: str):
+    """Wrapper to submit PDF if called separately in your pipeline."""
+    return submit_job(local_pdf_path=local_pdf_file, job_id=job_id)
+
+
+def send_job_metadata(job_id: str, filename: str):
+    """Metadata is now handled during submit_job; kept for interface compatibility."""
+    print(f"[INFO] Metadata for job '{job_id}' is included automatically during PDF submission.")
+
 
 # ---------------------------------------------------------
 # Pull Completed Results from EDGE
 # ---------------------------------------------------------
 def pull_completed(job_id: str, local_completed_dir: str):
+    """Downloads completed JSON and PDF result files from the EDGE backend."""
     os.makedirs(local_completed_dir, exist_ok=True)
 
-    remote_json = f"{CONFIG['remote_completed_dir']}/{job_id}.json"
-    remote_pdf = f"{CONFIG['remote_completed_dir']}/{job_id}.pdf"
+    endpoints = {
+        f"{job_id}.json": os.path.join(local_completed_dir, f"{job_id}.json"),
+        f"{job_id}.pdf": os.path.join(local_completed_dir, f"{job_id}.pdf"),
+    }
 
-    local_json = os.path.join(local_completed_dir, f"{job_id}.json")
-    local_pdf = os.path.join(local_completed_dir, f"{job_id}.pdf")
+    for remote_filename, local_file_path in endpoints.items():
+        download_url = f"{BASE_URL}/download_completed/{remote_filename}"
+        print(f"[INFO] Pulling completed file → {download_url}")
 
-    print(f"[INFO] Pulling completed JSON → {remote_json}")
-    sftp_receive(remote_json, local_json)
+        response = requests.get(download_url, stream=True, timeout=30)
+        response.raise_for_status()
 
-    print(f"[INFO] Pulling completed PDF → {remote_pdf}")
-    sftp_receive(remote_pdf, local_pdf)
+        with open(local_file_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        print(f"[INFO] Saved: {local_file_path}")
 
     print("[INFO] Completed results pulled successfully")
-
-# ---------------------------------------------------------
-# Connection Test
-# ---------------------------------------------------------
-def init_connection():
-    try:
-        ssh = ssh_connect()
-        ssh.close()
-    except Exception as e:
-        raise Exception(f"SSH connection failed: {e}")
-
-    print("[OK] SSH ready")

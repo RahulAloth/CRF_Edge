@@ -1,106 +1,126 @@
-#!/usr/bin/env python3
 import os
-import time
 import json
-import shutil
+import sys
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 
-QUEUE_DIR = "/home/rahul/crf_daemon/queue"
-STATUS_DIR = "/home/rahul/crf_daemon/status"
-OUTPUT_DIR = "/home/rahul/crf_daemon/output"
-ERROR_DIR = "/home/rahul/crf_daemon/error"
-COMPLETED_DIR = "/home/rahul/crf_daemon/completed"
+sys.path.append(os.path.abspath(".."))
+from crf_pdf_process.crf_split_into_images import pdf_to_images
 
-os.makedirs(QUEUE_DIR, exist_ok=True)
-os.makedirs(STATUS_DIR, exist_ok=True)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-os.makedirs(ERROR_DIR, exist_ok=True)
-os.makedirs(COMPLETED_DIR, exist_ok=True)
 
-def write_status(job_id, msg):
-    with open(f"{STATUS_DIR}/{job_id}.status", "w") as f:
-        f.write(msg)
+##sys.path.append(parent)
+## print(sys.path)
 
-def write_error(job_id, error_id, msg):
-    with open(f"{ERROR_DIR}/{job_id}.error", "w") as f:
-        f.write(f"{error_id}: {msg}")
 
-def check_scp_success(job):
-    pdf_path = job["input_pdf"]
-    return os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0
+import uvicorn
 
-def split_pdf(job_id):
-    time.sleep(1)
-    return True
+app = FastAPI(title="CRF Daemon API")
 
-def run_inference(job_id):
-    time.sleep(1)
-    return True
+# Directories
+BASE_DIR = os.path.expanduser("~/crf_job_daemon")
+INPUT_DIR = os.path.join(BASE_DIR, "crf_input")
+FIFO_PATH = os.path.join(BASE_DIR, "crf_job_queue.fifo")
+IMAGE_DIR = os.path.join(BASE_DIR, "crf_images")
 
-def run_faiss(job_id):
-    time.sleep(1)
-    return True
+os.makedirs(BASE_DIR, exist_ok=True)
+os.makedirs(INPUT_DIR, exist_ok=True)
+os.makedirs(IMAGE_DIR, exist_ok=True)
 
-def generate_crf_json(job_id):
-    output_path = f"{OUTPUT_DIR}/{job_id}.json"
-    data = {
-        "job_id": job_id,
-        "confidence": 0.98,
-        "sequence": "CRF Sequencing Done"
-    }
-    with open(output_path, "w") as f:
-        json.dump(data, f)
-    return True
+print(f"[Daemon] Base Directory: {BASE_DIR}")
+print(f"[Daemon] Input Directory: {INPUT_DIR}")
+print(f"[Daemon] FIFO Path: {FIFO_PATH}")
+print(f"[Daemon] Image Directory: {IMAGE_DIR}")
 
-def stitch_pdf(job_id):
-    time.sleep(1)
-    return True
+# Create FIFO if it doesn't exist
+if not os.path.exists(FIFO_PATH):
+    os.mkfifo(FIFO_PATH)
 
-def process_job(job_file):
-    job_path = os.path.join(QUEUE_DIR, job_file)
-    with open(job_path, "r") as f:
-        job = json.load(f)
 
-    job_id = job["job_id"]
+def enqueue_job(json_path: str) -> bool:
+    """
+    Push a JSON file path into the FIFO queue.
+    """
 
-    write_status(job_id, "Job_Start_Received")
+    try:
+        fd = os.open(FIFO_PATH, os.O_WRONLY | os.O_NONBLOCK)
 
-    if not check_scp_success(job):
-        write_error(job_id, "ERR_SCP_001", "SCP data missing or corrupted")
-        write_status(job_id, "Error_SCP_Failed")
-        return
+        with os.fdopen(fd, "w") as fifo:
+            fifo.write(json_path + "\n")
+            fifo.flush()
 
-    write_status(job_id, "Job_Split_as_Images")
-    if not split_pdf(job_id):
-        write_error(job_id, "ERR_SPLIT_002", "PDF split failed")
-        return
+        print(f"[Daemon] Queued: {json_path}")
+        return True
 
-    write_status(job_id, "Inference_Start")
-    if not run_inference(job_id):
-        write_error(job_id, "ERR_INF_003", "Inference failed")
-        return
+    except OSError as e:
+        print(f"[Daemon] FIFO Error: {e}")
+        return False
 
-    write_status(job_id, "FAISS_Correction")
-    if not run_faiss(job_id):
-        write_error(job_id, "ERR_FAISS_004", "FAISS correction failed")
-        return
 
-    write_status(job_id, "CRF_JSON_Generation")
-    generate_crf_json(job_id)
+@app.post("/submit_job")
+async def submit_job(
+    job_id: str = Form(...),
+    metadata: str = Form(...),
+    file: UploadFile = File(...)
+):
+    try:
+        # Save PDF
+        pdf_path = os.path.join(INPUT_DIR, f"{job_id}.pdf")
+        with open(pdf_path, "wb") as f:
+            f.write(await file.read())
 
-    write_status(job_id, "Stitching_PDF")
-    stitch_pdf(job_id)
+        # Save JSON
+        json_path = os.path.join(INPUT_DIR, f"{job_id}.json")
 
-    write_status(job_id, "CRF_Successful")
+        try:
+            json_data = json.loads(metadata)
+        except json.JSONDecodeError:
+            raise HTTPException(
+                status_code=400,
+                detail="metadata must be valid JSON"
+            )
 
-    shutil.move(job_path, os.path.join(COMPLETED_DIR, job_file))
+        json_data["job_id"] = job_id
+        json_data["pdf_path"] = pdf_path
+        json_data["status"] = "uploaded"
 
-def daemon_loop():
-    print("CRF-Edge Daemon Running...")
-    while True:
-        jobs = sorted(os.listdir(QUEUE_DIR))
-        if jobs:
-            process_job(jobs[0])
-        time.sleep(0.5)
+        with open(json_path, "w") as f:
+            json.dump(json_data, f, indent=4)
+
+        print(f"[Daemon] Saved PDF : {pdf_path}")
+        print(f"[Daemon] Saved JSON: {json_path}")
+
+        # Process PDF to images
+        updated_json_data = pdf_to_images(
+            pdf_path=pdf_path,
+            output_dir=IMAGE_DIR,
+            job_json=json_data
+        )
+
+        # Persist updated JSON dictionary back to file if returned by pdf_to_images
+        if updated_json_data:
+            with open(json_path, "w") as f:
+                json.dump(updated_json_data, f, indent=4)
+
+        # Push JSON file path string into FIFO
+        enqueue_job(json_path)
+
+        return {
+            "status": "success",
+            "pdf_path": pdf_path,
+            "json_path": json_path
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
 
 if __name__ == "__main__":
-    daemon_loop()
+    print(f"[Daemon] FIFO Path: {FIFO_PATH}")
+
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000
+    )

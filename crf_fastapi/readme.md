@@ -6,7 +6,7 @@
 
 - This test setup consists of two independent FastAPI applications:
 
-¸¸¸Ţext
+```Ţext
 +------------------+
 |      HOST        |
 | 192.168.178.24   |
@@ -28,7 +28,7 @@
 +------------------+
 |      HOST        |
 +------------------+
-¸¸¸
+```
 
 ## Scope of the appliction.
 
@@ -53,42 +53,45 @@ Port       : 8001
 ## Prerequisites
 
 -  Install required packages on both machines:
-¸¸¸text
+```Ţext
 pip install fastapi uvicorn requests python-multipart
-¸¸¸
+```
 
 ##  Starting the Applications
 - Start Edge Application
 On the Edge device:
-¸¸¸text
+```Ţext
 uvicorn edge_app:app --host 0.0.0.0 --port 8001
-¸¸¸
+```
 
 - Expected:
-¸¸¸text
+
+```Ţext
 INFO: Uvicorn running on http://0.0.0.0:8001
-¸¸¸
+```
 
 ## Start Host Application
 
 -  On the Host machine:
-¸¸¸text
+```Ţext
 uvicorn host_app:app --host 0.0.0.0 --port 8004
-¸¸¸
+```
 
 - Expected:
-¸¸¸text
+
+```Ţext
 INFO: Uvicorn running on http://0.0.0.0:8004
-¸¸¸
+```
 
 
 ### Connectivity Test
 - Host → Edge
 
 - Run on Host:
-¸¸¸text
+
+```Ţext
 curl http://192.168.178.112:8001/
-¸¸¸
+```
 
 
 

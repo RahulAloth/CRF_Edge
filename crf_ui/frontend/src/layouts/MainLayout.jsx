@@ -9,7 +9,11 @@ import {
   Divider,
 } from "@mui/material";
 
-import { uploadInputCRF } from "../api/backend";
+import {
+  uploadInputCRF,
+  getJobZipDownloadUrl
+} from "../api/backend";
+
 
 const drawerWidth = 360;
 
@@ -17,29 +21,50 @@ export default function MainLayout({
   children,
   onSelectView,
   onGenerate,
+  onRegenerate,
   currentView,
   setInputPdfFile,
   inputPdfFile,
   onPdfUploaded,
+  jobId,
 }) {
+
   const handleInputCRFUpload = async (event) => {
+
     const file = event.target.files[0];
+
     if (!file) return;
 
     setInputPdfFile(file);
 
     try {
+
       const result = await uploadInputCRF(file);
+
       onPdfUploaded(result);
-      alert("Input CRF uploaded successfully!");
+
+      console.log(
+        "Input CRF uploaded successfully"
+      );
+
     } catch (err) {
+
       console.error(err);
+
       alert("Failed to upload Input CRF");
     }
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        width: "100vw"
+      }}
+    >
+
       <Drawer
         variant="permanent"
         sx={{
@@ -57,15 +82,22 @@ export default function MainLayout({
           },
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 700 }}
+        >
           CRF Edge
           <br />
           HITL
         </Typography>
 
-        {/* Upload Button */}
         <div
-          onClick={() => document.getElementById("pdfInputFile").click()}
+          onClick={() =>
+            document
+              .getElementById("pdfInputFile")
+              .click()
+          }
           style={{
             width: "100%",
             maxWidth: "260px",
@@ -91,39 +123,87 @@ export default function MainLayout({
           onChange={handleInputCRFUpload}
         />
 
-        <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
+        <Divider
+          sx={{
+            borderColor:
+              "rgba(255,255,255,0.3)"
+          }}
+        />
 
-        {/* Navigation */}
         <List sx={{ flexGrow: 1 }}>
+
           <ListItemButton
-            selected={currentView === "input"}
-            onClick={() => onSelectView("input")}
+            selected={
+              currentView === "input"
+            }
+            onClick={() =>
+              onSelectView("input")
+            }
           >
-            <ListItemText primary="CRF Input Viewer" />
+            <ListItemText
+              primary="CRF Input Viewer"
+            />
           </ListItemButton>
 
           <ListItemButton
-            selected={currentView === "outputPdf"}
-            onClick={() => onSelectView("outputPdf")}
+            selected={
+              currentView === "outputPdf"
+            }
+            onClick={() =>
+              onSelectView("outputPdf")
+            }
           >
-            <ListItemText primary="Processed PDF" />
+            <ListItemText
+              primary="Processed PDF"
+            />
           </ListItemButton>
 
           <ListItemButton
-            selected={currentView === "outputJson"}
-            onClick={() => onSelectView("outputJson")}
+            selected={
+              currentView === "outputJson"
+            }
+            onClick={() =>
+              onSelectView("outputJson")
+            }
           >
-            <ListItemText primary="Processed JSON" />
+            <ListItemText
+              primary="Processed JSON"
+            />
           </ListItemButton>
+
         </List>
 
-        <Divider sx={{ borderColor: "rgba(255,255,255,0.3)" }} />
+        <Divider
+          sx={{
+            borderColor:
+              "rgba(255,255,255,0.3)"
+          }}
+        />
 
-        {/* Generate Button */}
+        {jobId && (
+          <Button
+            variant="contained"
+            href={`http://127.0.0.1:8000/api/job/zip/${jobId}`}
+            target="_blank"
+            download
+            sx={{
+              backgroundColor: "#2e7d32",
+              color: "white",
+              fontWeight: 600,
+              marginBottom: "10px",
+            }}
+          >
+            Download ZIP
+          </Button>
+        )}
+
         <Button
           variant="contained"
           onClick={onGenerate}
-          disabled={currentView !== "input" || !inputPdfFile}
+          disabled={
+            currentView !== "input" ||
+            !inputPdfFile
+          }
           sx={{
             backgroundColor: "white",
             color: "#0A3D91",
@@ -132,9 +212,9 @@ export default function MainLayout({
         >
           Generate
         </Button>
+
       </Drawer>
 
-      {/* Main Content */}
       <div
         style={{
           flexGrow: 1,
@@ -145,8 +225,18 @@ export default function MainLayout({
           display: "flex",
         }}
       >
-        <div style={{ flexGrow: 1, overflow: "hidden" }}>{children}</div>
+
+        <div
+          style={{
+            flexGrow: 1,
+            overflow: "hidden",
+          }}
+        >
+          {children}
+        </div>
+
       </div>
+
     </div>
   );
 }

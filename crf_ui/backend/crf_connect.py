@@ -8,9 +8,9 @@ import requests
 # ---------------------------------------------------------
 CONFIG = {
     "edge_ip": "192.168.178.112",
-    "port": 8000,
-    "timeout": 10,  # seconds
-}
+    "port": 8001,
+    "timeout": None
+    }
 
 BASE_URL = f"http://{CONFIG['edge_ip']}:{CONFIG['port']}"
 
@@ -29,10 +29,10 @@ def init_connection():
 
 
 # ---------------------------------------------------------
-# Submit Job (Replaces send_pdf_file + send_job_metadata)
+# Submit Job (PDF + Metadata)
 # ---------------------------------------------------------
 def submit_job(local_pdf_path: str, job_id: str, extra_metadata: dict = None):
-    """Sends both the PDF file and metadata in a single HTTP POST request."""
+    """Sends both the PDF file and metadata in a single HTTP POST request to the Edge daemon."""
     if not os.path.exists(local_pdf_path):
         raise FileNotFoundError(f"Local PDF file not found: {local_pdf_path}")
 
@@ -60,7 +60,7 @@ def submit_job(local_pdf_path: str, job_id: str, extra_metadata: dict = None):
             f"{BASE_URL}/submit_job",
             files=files,
             data=data,
-            timeout=30
+            timeout=None  # Use default timeout; can be adjusted if needed
         )
 
     response.raise_for_status()
@@ -69,7 +69,7 @@ def submit_job(local_pdf_path: str, job_id: str, extra_metadata: dict = None):
 
 
 # ---------------------------------------------------------
-# Backwards-Compatibility Wrappers (If existing code calls these)
+# Backwards-Compatibility Wrappers
 # ---------------------------------------------------------
 def send_pdf_file(local_pdf_file: str, job_id: str):
     """Wrapper to submit PDF if called separately in your pipeline."""
@@ -77,34 +77,5 @@ def send_pdf_file(local_pdf_file: str, job_id: str):
 
 
 def send_job_metadata(job_id: str, filename: str):
-    """Metadata is now handled during submit_job; kept for interface compatibility."""
+    """Metadata is handled during submit_job; kept for interface compatibility."""
     print(f"[INFO] Metadata for job '{job_id}' is included automatically during PDF submission.")
-
-
-# ---------------------------------------------------------
-# Pull Completed Results from EDGE
-# ---------------------------------------------------------
-def pull_completed(job_id: str, local_completed_dir: str):
-    """Downloads completed JSON and PDF result files from the EDGE backend."""
-    os.makedirs(local_completed_dir, exist_ok=True)
-
-    endpoints = {
-        f"{job_id}.json": os.path.join(local_completed_dir, f"{job_id}.json"),
-        f"{job_id}.pdf": os.path.join(local_completed_dir, f"{job_id}.pdf"),
-    }
-
-    for remote_filename, local_file_path in endpoints.items():
-        download_url = f"{BASE_URL}/download_completed/{remote_filename}"
-        print(f"[INFO] Pulling completed file → {download_url}")
-
-        response = requests.get(download_url, stream=True, timeout=30)
-        response.raise_for_status()
-
-        with open(local_file_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
-
-        print(f"[INFO] Saved: {local_file_path}")
-
-    print("[INFO] Completed results pulled successfully")
